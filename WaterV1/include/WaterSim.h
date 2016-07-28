@@ -16,54 +16,7 @@ namespace Water{
 
 	class WaterSim{
 		public:
-			WaterSim(int numberOfParticles){
-				N = numberOfParticles;
-
-				x = malloc(sizeof(glm::vec3)*N);
-				dx = malloc(sizeof(glm::vec3)*N);
-
-				for(int i=0; i<N; i++){
-					x[i] = glm::vec3(10.0*(rand()%1000)/1000.0,10.0*(rand()%1000)/1000.0,10.0*(rand()%1000)/1000.0 -5.0);
-					dx[i] = glm::vec3(0.0,0.0,0.0);
-				}
-
-				b = malloc(sizeof(plane)*2);
-				b[0].a = glm::vec3(0.0,0.0,0.0);
-				b[0].b = glm::vec3(1.0,0.0,0.0);
-				b[0].c = glm::vec3(1.0,1.0,1.0);
-
-				b[1].a = glm::vec3(0.0,0.0,0.0);
-				b[1].b = glm::vec3(1.0,0.0,0.0);
-				b[1].c = glm::vec3(1.0,1.0,-1.0);
-
-				GLfloat tmp = 1.0f/sqrt(2.0f);
-				GLfloat vertices[] = {
-					1.0f,0.0f,-tmp,
-					-1.0f,0.0f,-tmp,
-					0.0f,1.0f,tmp,
-					1.0f,0.0f,-tmp,
-					0.0f,1.0f,tmp,
-					0.0f,-1.0f,tmp,
-					1.0f,0.0f,-tmp,
-					0.0f,-1.0f,tmp,
-					-1.0f,0.0f,-tmp,
-					-1.0f,0.0f,-tmp,
-					0.0f,1.0f,tmp,
-					0.0f,-1.0f,tmp
-				};
-
-				glGenBuffers(1, &VBO);
-				glGenVertexArrays(1, &VAO);
-
-				glBindVertexArray(VAO);
-					glBindBuffer(GL_ARRAY_BUFFER, VBO);
-					glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    				glEnableVertexAttribArray(0);
-				glBindVertexArray(0);
-				glBindBuffer(GL_ARRAY_BUFFER, 0);
-			}
+			WaterSim(int numberOfParticles);
 
 			//Number of particles
 			int N;
@@ -71,21 +24,47 @@ namespace Water{
 			glm::vec3* x;
 			//Velocities
 			glm::vec3* dx;
+			//Mass densities
+			float* dens;
+			//Presures
+			float* pr;
+
 			//Planes
 			plane* b;
+			//Number of planes
+			int Np;
 
 			void iter();
 			void draw(Shader s);
+			void drawCollision(Shader s);
 		private:
+			float kernelWidth;
+			//Particle mass
+			float pm;
+			float kappa;
+			//Viscosity
+			float mu;
+
 			GLfloat* tv;
-			GLuint VBO, VAO;
+			GLuint VBO, VBOnormals, VAO;
+
+			GLuint planesVBO, planesVBOnormals, planesVAO;
 
 			void updatedx();
 			void updatex();
+			void updatedens();
+			void updatepr();
+			void applyPressureForce();
+			void applyViscosityForce();
+			void applyExternalForce();
 
 			//Returns true if the x[particleIndex] is updated
 			bool collide(int particleIndex, plane pl);
 			void drawParticle(int index, Shader s);
 			void drawTetrahedron();
+
+			float kernel(glm::vec3 r, float h);
+			glm::vec3 dkernel(glm::vec3 r, float h);
+			float ddkernel(glm::vec3 r, float h);
 	};
 }

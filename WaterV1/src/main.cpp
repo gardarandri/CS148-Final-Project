@@ -37,7 +37,7 @@ GLfloat lastY  =  HEIGHT / 2.0;
 bool    keys[1024];
 
 // Light attributes
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightPos(0.0f, 10.0f, 0.0f);
 
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
@@ -84,7 +84,7 @@ int main()
     // Build and compile our shader program
     Shader lightingShader("shaders/phong.vs", "shaders/phong.frag");
 
-	WaterSim wat(100);
+	WaterSim wat(1000);
 
     // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat vertices[] = {
@@ -202,11 +202,9 @@ int main()
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         // Draw the container (using container's vertex attributes)
-        glBindVertexArray(containerVAO);
         glm::mat4 model;
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
+		wat.drawCollision(lightingShader);
 
 		wat.draw(lightingShader);
 		wat.iter();
@@ -245,6 +243,14 @@ void do_movement()
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (keys[GLFW_KEY_D])
         camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (keys[GLFW_KEY_UP])
+    	camera.ProcessMouseMovement(0.0, 5.1);
+    if (keys[GLFW_KEY_DOWN])
+    	camera.ProcessMouseMovement(0.0, -5.1);
+    if (keys[GLFW_KEY_LEFT])
+    	camera.ProcessMouseMovement(-5.1, 0.0);
+    if (keys[GLFW_KEY_RIGHT])
+    	camera.ProcessMouseMovement(5.1, 0.0);
 }
 
 bool firstMouse = true;

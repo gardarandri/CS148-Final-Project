@@ -1,7 +1,7 @@
 CPP = g++
 LD = g++
 CPPFLAGS = -O3 -std=c++11 -fpermissive
-LDFLAGS =
+LDFLAGS = -lGLU
 TARGET = water
 INCLUDE = -Iinclude/
 OBJS = objs/main.o objs/Shader.o objs/Camera.o objs/WaterSim.o

@@ -58,6 +58,8 @@ namespace Water{
 			void applyViscosityForce();
 			void applyExternalForce();
 
+			void loadParticleDrawData();
+
 			//Returns true if the x[particleIndex] is updated
 			bool collide(int particleIndex, plane pl);
 			void drawParticle(int index, Shader s);

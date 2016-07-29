@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <GL/glew.h>
+#include <GL/glu.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "WaterSim.h"
@@ -33,33 +34,33 @@ GLfloat* genNormals(GLfloat* v, int L){
 WaterSim::WaterSim(int numberOfParticles){
 	N = numberOfParticles;
 	//Particle mass
-	pm = 0.02;
+	pm = 1.0;
 	//gas stiffness constant
-	kappa = 3;//0.001;
+	kappa = 0.000001;//3;//0.00001;
 	//Viscosity
-	mu = 3.5;//0.01;
-	kernelWidth = 0.0435;
+	mu = 0.00001;
+	kernelWidth = 0.435;
 
 	x = (glm::vec3*)malloc(sizeof(glm::vec3)*N);
 	dx = (glm::vec3*)malloc(sizeof(glm::vec3)*N);
 	dens = (float*)malloc(sizeof(glm::vec3)*N);
 	pr = (float*)malloc(sizeof(glm::vec3)*N);
 
-	GLfloat sideSize = 0.5;
+	GLfloat sideSize = 0.8;
 	for(int i=0; i<N; i++){
-		x[i] = glm::vec3(2*sideSize*(rand()%1000)/1000.0-sideSize,2*sideSize*(rand()%1000)/1000.0-sideSize,2*sideSize*(rand()%1000)/1000.0-sideSize);
+		x[i] = glm::vec3(2*sideSize*(rand()%1000)/1000.0-sideSize,sideSize*(rand()%1000)/1000.0,2*sideSize*(rand()%1000)/1000.0-sideSize);
 		dx[i] = glm::vec3(0.0,0.0,0.0);
 	}
 
 	Np = 10;
 	b = new plane[Np];
-	b[0].a = glm::vec3(sideSize,1.0,-sideSize);
-	b[0].b = glm::vec3(sideSize,1.0,sideSize);
-	b[0].c = glm::vec3(-sideSize,1.0,sideSize);
+	b[0].a = glm::vec3(sideSize,0.0,-sideSize);
+	b[0].b = glm::vec3(sideSize,0.0,sideSize);
+	b[0].c = glm::vec3(-sideSize,0.0,sideSize);
 
-	b[1].a = glm::vec3(-sideSize,1.0,sideSize);
-	b[1].b = glm::vec3(-sideSize,1.0,-sideSize);
-	b[1].c = glm::vec3(sideSize,1.0,-sideSize);
+	b[1].a = glm::vec3(-sideSize,0.0,sideSize);
+	b[1].b = glm::vec3(-sideSize,0.0,-sideSize);
+	b[1].c = glm::vec3(sideSize,0.0,-sideSize);
 
 	b[2].a = glm::vec3(-sideSize,0.0,sideSize);
 	b[2].b = glm::vec3(-sideSize,5.0,sideSize);
@@ -182,12 +183,6 @@ bool WaterSim::collide(int particleIndex, plane pl){
 		float d = glm::dot(dx[i], n);
 		float side = (d<0) - (d>0);
 		n = side*n;
-		/*
-	 	*          A
-	 	*		n	|     /   dx[i]
-	 	* --------------/--------
-	 	*              V
-	 	*/
 
 		glm::mat3 A(0.0);
 		A[0] = pl.a - pl.b;
@@ -199,14 +194,13 @@ bool WaterSim::collide(int particleIndex, plane pl){
 		A[1] = pl.a - pl.c;
 		A[2] = pl.a - x[i];
 
-		GLfloat t = glm::determinant(A_t) / glm::determinant(A);
+		GLfloat t = glm::determinant(A_t) / (glm::determinant(A)+1e-10);
 
-		glm::vec3 dir = glm::normalize(dx[i]);
 
 
 		float eps = 0.000001;
-		x[i] = x[i] + t*dx[i];//- n * glm::dot(n, dx[i]);
-		dx[i] = dx[i] - 1.2f*glm::dot(dx[i],n)*n;
+		x[i] = x[i] + (t-eps)*dx[i];
+		dx[i] -= 1.2f*glm::dot(dx[i],n)*n;
 
 		return true;
 	}
@@ -215,10 +209,11 @@ bool WaterSim::collide(int particleIndex, plane pl){
 
 void WaterSim::updatex(){
 	for(int i=0; i<N; i++){
+		bool tomove = false;
 		for(int j=0; j<Np; j++){
 			collide(i,b[j]);
 		}
-		x[i] += dx[i];
+		if(tomove == false) x[i] += dx[i];
 		if(x[i].x > 10) x[i].x -= 20.0;
 		if(x[i].x < -10) x[i].x += 20.0;
 		if(x[i].y < -1) x[i].y += 10.0;
@@ -263,7 +258,7 @@ void WaterSim::applyViscosityForce(){
 }
 
 void WaterSim::applyExternalForce(){
-	glm::vec3 f(0.0,-0.0001,0.0);
+	glm::vec3 f(0.0,-0.0007,0.0);
 	for(int i=0; i<N; i++){
 		dx[i] += f / pm;
 	}
@@ -280,7 +275,7 @@ void WaterSim::drawParticle(int index, Shader s){
 	glm::mat4 model = glm::scale(glm::translate(glm::mat4(1.0), x[index]),glm::vec3(0.1,0.1,0.1));
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 	GLint colorLoc = glGetUniformLocation(s.Program, "objectColor");
-	glm::vec3 color(1.0f,1.0f,0.0f);
+	glm::vec3 color(0.0f,0.0f,1.0f);
 	glUniform3fv(colorLoc, 1, (GLfloat*)glm::value_ptr(color));
 	drawTetrahedron();
 }
@@ -293,18 +288,20 @@ void WaterSim::draw(Shader s){
 
 void WaterSim::drawCollision(Shader s){
 	GLint colorLoc = glGetUniformLocation(s.Program, "objectColor");
-	glm::vec3 color(0.0f,0.0f,1.0f);
+	glm::vec3 color(1.0f,1.0f,0.0f);
 	glUniform3fv(colorLoc, 1, glm::value_ptr(color));
 	glBindVertexArray(planesVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 3*Np);
 	glBindVertexArray(0);
 }
 
+float EPS = 1e-10;
+
 float WaterSim::kernel(glm::vec3 r, float h){
 	if(glm::length(r) > h){
 		return 0.0;
 	}else{
-		return 15.0/(3.14159265*pow(h,6.0f)) * pow(h - glm::length(r),3.0f);
+		return 15.0/(3.14159265*pow(h,6.0f)+EPS) * pow(h - glm::length(r),3.0f);
 	}
 }
 
@@ -312,7 +309,7 @@ glm::vec3 WaterSim::dkernel(glm::vec3 r, float h){
 	if(glm::length(r) > h){
 		return glm::vec3(0.0,0.0,0.0);
 	}else{
-		return -90.0f/(3.14159265f*pow(h,6.0f)) * pow(h - glm::length(r),2.0f)*r*(1/glm::length(r));
+		return -90.0f/(3.14159265f*pow(h,6.0f)+EPS) * pow(h - glm::length(r),2.0f)*r*(1/(glm::length(r)+EPS));
 	}
 }
 
@@ -320,7 +317,7 @@ float WaterSim::ddkernel(glm::vec3 r, float h){
 	if(glm::length(r) > h){
 		return 0.0;
 	}else{
-		return -90.0f/(3.14159265f*pow(h,6.0f))*(1/glm::length(r))*(h - glm::length(r))*(h - 2.0f*glm::length(r));
+		return -90.0f/(3.14159265f*pow(h,6.0f)+EPS)*(1/(glm::length(r)+EPS))*(h - glm::length(r))*(h - 2.0f*glm::length(r));
 	}
 }
 

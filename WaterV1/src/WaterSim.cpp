@@ -33,26 +33,26 @@ GLfloat* genNormals(GLfloat* v, int L){
 WaterSim::WaterSim(int numberOfParticles){
 	N = numberOfParticles;
 	//Particle mass
-	pm = 1.0;
+	pm = 0.02;
 	//gas stiffness constant
-	kappa = 0.0000001;
+	kappa = 3;//0.001;
 	//Viscosity
-	mu = 0.000001;
-	kernelWidth = 0.1;
+	mu = 3.5;//0.01;
+	kernelWidth = 0.0435;
 
 	x = (glm::vec3*)malloc(sizeof(glm::vec3)*N);
 	dx = (glm::vec3*)malloc(sizeof(glm::vec3)*N);
 	dens = (float*)malloc(sizeof(glm::vec3)*N);
 	pr = (float*)malloc(sizeof(glm::vec3)*N);
 
+	GLfloat sideSize = 0.5;
 	for(int i=0; i<N; i++){
-		x[i] = glm::vec3(1.0*(rand()%1000)/1000.0,1.0*(rand()%1000)/1000.0,1.0*(rand()%1000)/1000.0);
+		x[i] = glm::vec3(2*sideSize*(rand()%1000)/1000.0-sideSize,2*sideSize*(rand()%1000)/1000.0-sideSize,2*sideSize*(rand()%1000)/1000.0-sideSize);
 		dx[i] = glm::vec3(0.0,0.0,0.0);
 	}
 
-	Np = 12;
+	Np = 10;
 	b = new plane[Np];
-	GLfloat sideSize = 1.0;
 	b[0].a = glm::vec3(sideSize,1.0,-sideSize);
 	b[0].b = glm::vec3(sideSize,1.0,sideSize);
 	b[0].c = glm::vec3(-sideSize,1.0,sideSize);
@@ -93,6 +93,7 @@ WaterSim::WaterSim(int numberOfParticles){
 	b[9].b = glm::vec3(-sideSize,0.0,sideSize);
 	b[9].c = glm::vec3(-sideSize,5.0,sideSize);
 
+	/*
 	b[10].a = glm::vec3(2*sideSize + sideSize,0.0,-sideSize);
 	b[10].b = glm::vec3(2*sideSize + sideSize,0.0,sideSize);
 	b[10].c = glm::vec3(2*sideSize - sideSize,0.0,sideSize);
@@ -100,6 +101,7 @@ WaterSim::WaterSim(int numberOfParticles){
 	b[11].a = glm::vec3(2*sideSize -sideSize,0.0,sideSize);
 	b[11].b = glm::vec3(2*sideSize -sideSize,0.0,-sideSize);
 	b[11].c = glm::vec3(2*sideSize + sideSize,0.0,-sideSize);
+	*/
 
 
 	GLfloat tmp = 1.0f/sqrt(2.0f);
@@ -203,7 +205,7 @@ bool WaterSim::collide(int particleIndex, plane pl){
 
 
 		float eps = 0.000001;
-		x[i] = x[i] - n * glm::dot(n, dx[i]);
+		x[i] = x[i] + t*dx[i];//- n * glm::dot(n, dx[i]);
 		dx[i] = dx[i] - 1.2f*glm::dot(dx[i],n)*n;
 
 		return true;
@@ -227,9 +229,9 @@ void WaterSim::updatedens(){
 	for(int i=0; i<N; i++){
 		float newdens = 0.0;
 		for(int j=0; j<N; j++){
-			newdens += pm*kernel(x[i] - x[j], kernelWidth);
+			newdens += kernel(x[i] - x[j], kernelWidth);
 		}
-		dens[i] = newdens;
+		dens[i] = pm*newdens;
 	}
 }
 
@@ -238,22 +240,25 @@ void WaterSim::updatepr(){
 
 void WaterSim::applyPressureForce(){
 	for(int i=0; i<N; i++){
-		glm::vec3 f(0.0,0.0,0.0);
+		glm::vec3 accum;
 		for(int j=0; j<N; j++){
 			if(i != j){
-				dx[i] += -kappa * dkernel(x[i] - x[j], kernelWidth);
+				accum += -dkernel(x[i] - x[j], kernelWidth);
 			}
 		}
+		dx[i] += kappa*accum;
 	}
 }
 
 void WaterSim::applyViscosityForce(){
 	for(int i=0; i<N; i++){
+		glm::vec3 accum;
 		for(int j=0; j<N; j++){
 			if(i != j){
-				dx[i] += - dx[j] * (mu/dens[j]) * ddkernel(x[i] - x[j], kernelWidth);
+				accum += - (dx[j] /dens[j]) * ddkernel(x[i] - x[j], kernelWidth);
 			}
 		}
+		dx[i] += mu*accum;
 	}
 }
 

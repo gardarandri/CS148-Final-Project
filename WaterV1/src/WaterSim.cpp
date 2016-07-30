@@ -36,10 +36,10 @@ WaterSim::WaterSim(int numberOfParticles){
 	//Particle mass
 	pm = 1.0;
 	//gas stiffness constant
-	kappa = 0.000001;//3;//0.00001;
+	kappa = 0.0000001;//3;//0.00001;
 	//Viscosity
 	mu = 0.00001;
-	kernelWidth = 0.435;
+	kernelWidth = 0.4;
 
 	x = (glm::vec3*)malloc(sizeof(glm::vec3)*N);
 	dx = (glm::vec3*)malloc(sizeof(glm::vec3)*N);
@@ -54,45 +54,45 @@ WaterSim::WaterSim(int numberOfParticles){
 
 	Np = 10;
 	b = new plane[Np];
-	b[0].a = glm::vec3(sideSize,0.0,-sideSize);
-	b[0].b = glm::vec3(sideSize,0.0,sideSize);
-	b[0].c = glm::vec3(-sideSize,0.0,sideSize);
+	b[0].a = glm::vec3(2*sideSize,0.0,-2*sideSize);
+	b[0].b = glm::vec3(2*sideSize,0.0,2*sideSize);
+	b[0].c = glm::vec3(-2*sideSize,0.0,2*sideSize);
 
-	b[1].a = glm::vec3(-sideSize,0.0,sideSize);
-	b[1].b = glm::vec3(-sideSize,0.0,-sideSize);
-	b[1].c = glm::vec3(sideSize,0.0,-sideSize);
+	b[1].a = glm::vec3(-2*sideSize,0.0,2*sideSize);
+	b[1].b = glm::vec3(-2*sideSize,0.0,-2*sideSize);
+	b[1].c = glm::vec3(2*sideSize,0.0,-2*sideSize);
 
-	b[2].a = glm::vec3(-sideSize,0.0,sideSize);
-	b[2].b = glm::vec3(-sideSize,5.0,sideSize);
-	b[2].c = glm::vec3(sideSize,0.0,sideSize);
+	b[2].a = glm::vec3(2*sideSize,-4.0,-2*sideSize+3.0);
+	b[2].b = glm::vec3(2*sideSize,-4.0,2*sideSize+3.0);
+	b[2].c = glm::vec3(-2*sideSize,-4.0,2*sideSize+3.0);
 
-	b[3].a = glm::vec3(sideSize,0.0,sideSize);
-	b[3].b = glm::vec3(sideSize,5.0,sideSize);
-	b[3].c = glm::vec3(-sideSize,5.0,sideSize);
+	b[3].a = glm::vec3(-2*sideSize,-4.0,2*sideSize+3.0);
+	b[3].b = glm::vec3(-2*sideSize,-4.0,-2*sideSize+3.0);
+	b[3].c = glm::vec3(2*sideSize,-4.0,-2*sideSize+3.0);
 
-	b[4].a = glm::vec3(-sideSize,0.0,-sideSize);
-	b[4].b = glm::vec3(-sideSize,5.0,-sideSize);
-	b[4].c = glm::vec3(sideSize,0.0,-sideSize);
+	b[4].a = glm::vec3(-sideSize-1.0,-1.0+0.0,-sideSize);
+	b[4].b = glm::vec3(-sideSize-1.0,-1.0+5.0,-sideSize);
+	b[4].c = glm::vec3(sideSize+1.0,-1.0+0.0,-sideSize);
 
-	b[5].a = glm::vec3(sideSize,0.0,-sideSize);
-	b[5].b = glm::vec3(sideSize,5.0,-sideSize);
-	b[5].c = glm::vec3(-sideSize,5.0,-sideSize);
+	b[5].a = glm::vec3(sideSize+1.0,-1.0+0.0,-sideSize);
+	b[5].b = glm::vec3(sideSize+1.0,-1.0+5.0,-sideSize);
+	b[5].c = glm::vec3(-sideSize-1.0,-1.0+5.0,-sideSize);
 
-	b[6].a = glm::vec3(sideSize,0.0,-sideSize);
-	b[6].b = glm::vec3(sideSize,5.0,-sideSize);
-	b[6].c = glm::vec3(sideSize,5.0,sideSize);
+	b[6].a = glm::vec3(sideSize,-1.0+0.0,-sideSize-1.0);
+	b[6].b = glm::vec3(sideSize,-1.0+5.0,-sideSize-1.0);
+	b[6].c = glm::vec3(sideSize,-1.0+5.0,sideSize);
 
-	b[7].a = glm::vec3(sideSize,0.0,-sideSize);
-	b[7].b = glm::vec3(sideSize,0.0,sideSize);
-	b[7].c = glm::vec3(sideSize,5.0,sideSize);
+	b[7].a = glm::vec3(sideSize,-1.0+0.0,-sideSize-1.0);
+	b[7].b = glm::vec3(sideSize,-1.0+0.0,sideSize);
+	b[7].c = glm::vec3(sideSize,-1.0+5.0,sideSize);
 
-	b[8].a = glm::vec3(-sideSize,0.0,-sideSize);
-	b[8].b = glm::vec3(-sideSize,5.0,-sideSize);
-	b[8].c = glm::vec3(-sideSize,5.0,sideSize);
+	b[8].a = glm::vec3(-sideSize,-1.0+0.0,-sideSize-1.0);
+	b[8].b = glm::vec3(-sideSize,-1.0+5.0,-sideSize-1.0);
+	b[8].c = glm::vec3(-sideSize,-1.0+5.0,sideSize);
 
-	b[9].a = glm::vec3(-sideSize,0.0,-sideSize);
-	b[9].b = glm::vec3(-sideSize,0.0,sideSize);
-	b[9].c = glm::vec3(-sideSize,5.0,sideSize);
+	b[9].a = glm::vec3(-sideSize,-1.0+0.0,-sideSize-1.0);
+	b[9].b = glm::vec3(-sideSize,-1.0+0.0,sideSize);
+	b[9].c = glm::vec3(-sideSize,-1.0+5.0,sideSize);
 
 	/*
 	b[10].a = glm::vec3(2*sideSize + sideSize,0.0,-sideSize);
@@ -190,16 +190,32 @@ bool WaterSim::collide(int particleIndex, plane pl){
 		A[2] = dx[i];
 
 		glm::mat3 A_t(0.0);
-		A[0] = pl.a - pl.b;
-		A[1] = pl.a - pl.c;
-		A[2] = pl.a - x[i];
+		A_t[0] = pl.a - pl.b;
+		A_t[1] = pl.a - pl.c;
+		A_t[2] = pl.a - x[i];
 
 		GLfloat t = glm::determinant(A_t) / (glm::determinant(A)+1e-10);
 
+		glm::mat3 A_gamma(0.0);
+		A_gamma[0] = pl.a - pl.b;
+		A_gamma[1] = pl.a - x[i];
+		A_gamma[2] = dx[i];
 
+		GLfloat gamma = glm::determinant(A_gamma) / glm::determinant(A);
+
+		if(gamma < 0 || gamma > 1) return false; // no hit!
+
+		glm::mat3 A_beta(0.0);
+		A_beta[0] = pl.a - x[i];
+		A_beta[1] = pl.a - pl.c;
+		A_beta[2] = dx[i];
+
+		GLfloat beta = glm::determinant(A_beta) / glm::determinant(A);
+
+		if (beta < 0 || beta > 1 - gamma) return false; // no hit!
 
 		float eps = 0.000001;
-		x[i] = x[i] + (t-eps)*dx[i];
+		x[i] = x[i] - glm::dot((1-t)*dx[i],n)*n;
 		dx[i] -= 1.2f*glm::dot(dx[i],n)*n;
 
 		return true;
@@ -209,14 +225,18 @@ bool WaterSim::collide(int particleIndex, plane pl){
 
 void WaterSim::updatex(){
 	for(int i=0; i<N; i++){
-		bool tomove = false;
 		for(int j=0; j<Np; j++){
 			collide(i,b[j]);
 		}
-		if(tomove == false) x[i] += dx[i];
-		if(x[i].x > 10) x[i].x -= 20.0;
-		if(x[i].x < -10) x[i].x += 20.0;
-		if(x[i].y < -1) x[i].y += 10.0;
+		x[i] += dx[i];
+		if(x[i].y < -10){
+			x[i].y = 1.1+2*(rand() % 1000)/1000.0f - 1.0;
+			x[i].x = 2*(rand() % 1000)/1000.0f - 1.0;
+			x[i].z = -0.1;
+			dx[i].y *= 0.2f;
+			dx[i].x *= 0.2f;
+			dx[i].z *= 0.2f;
+		}
 	}
 }
 

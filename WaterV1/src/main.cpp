@@ -84,7 +84,7 @@ int main()
     // Build and compile our shader program
     Shader lightingShader("shaders/phong.vs", "shaders/phong.frag");
 
-	WaterSim wat(1000);
+	WaterSim wat(2000);
 
     // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat vertices[] = {

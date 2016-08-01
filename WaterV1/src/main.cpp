@@ -84,7 +84,15 @@ int main()
     // Build and compile our shader program
     Shader lightingShader("shaders/phong.vs", "shaders/phong.frag");
 
-	WaterSim wat(2000);
+	WaterSim wat(1000);
+
+	glm::mat4 m(1.0);
+
+	wat.addPlane(m);
+	wat.addPlane(glm::rotate(glm::translate(m,glm::vec3(-1.0,0.0,0.0)),-0.4f,glm::vec3(0.0,0.0,1.0)));
+	wat.addPlane(glm::rotate(glm::translate(m,glm::vec3(1.0,0.0,0.0)),0.4f,glm::vec3(0.0,0.0,1.0)));
+
+	wat.configurePlanes();
 
     // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat vertices[] = {

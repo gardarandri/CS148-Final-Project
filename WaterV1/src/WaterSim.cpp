@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <vector>
 #include <GL/glew.h>
 #include <GL/glu.h>
 #include <glm/glm.hpp>
@@ -52,6 +53,7 @@ WaterSim::WaterSim(int numberOfParticles){
 		dx[i] = glm::vec3(0.0,0.0,0.0);
 	}
 
+	/*
 	Np = 10;
 	b = new plane[Np];
 	b[0].a = glm::vec3(2*sideSize,0.0,-2*sideSize);
@@ -94,14 +96,6 @@ WaterSim::WaterSim(int numberOfParticles){
 	b[9].b = glm::vec3(-sideSize,-1.0+0.0,sideSize);
 	b[9].c = glm::vec3(-sideSize,-1.0+5.0,sideSize);
 
-	/*
-	b[10].a = glm::vec3(2*sideSize + sideSize,0.0,-sideSize);
-	b[10].b = glm::vec3(2*sideSize + sideSize,0.0,sideSize);
-	b[10].c = glm::vec3(2*sideSize - sideSize,0.0,sideSize);
-
-	b[11].a = glm::vec3(2*sideSize -sideSize,0.0,sideSize);
-	b[11].b = glm::vec3(2*sideSize -sideSize,0.0,-sideSize);
-	b[11].c = glm::vec3(2*sideSize + sideSize,0.0,-sideSize);
 	*/
 
 
@@ -140,6 +134,24 @@ WaterSim::WaterSim(int numberOfParticles){
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+}
+
+void WaterSim::addPlane(glm::mat4 modelMatrix){
+	plane p1;
+	p1.a = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,-1.0,1.0));
+	p1.b = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,-1.0,1.0));
+	p1.c = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
+
+	plane p2;
+	p2.a = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,-1.0,1.0));
+	p2.b = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
+	p2.c = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,1.0,1.0));
+
+	b.push_back(p1);
+	b.push_back(p2);
+}
+
+void WaterSim::configurePlanes(){
 	glGenBuffers(1, &planesVBO);
 	glGenBuffers(1, &planesVBOnormals);
 	glGenVertexArrays(1, &planesVAO);
@@ -147,13 +159,13 @@ WaterSim::WaterSim(int numberOfParticles){
 
 	glBindVertexArray(planesVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, planesVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*9*Np, (GLfloat*)b, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*9*b.size(), (GLfloat*)(b.data()), GL_STATIC_DRAW);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 		glEnableVertexAttribArray(0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBOnormals);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*9*Np, genNormals((GLfloat*)b,12*3), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*9*b.size(), genNormals((GLfloat*)(b.data()),9*b.size()), GL_STATIC_DRAW);
 
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 		glEnableVertexAttribArray(1);
@@ -225,7 +237,7 @@ bool WaterSim::collide(int particleIndex, plane pl){
 
 void WaterSim::updatex(){
 	for(int i=0; i<N; i++){
-		for(int j=0; j<Np; j++){
+		for(int j=0; j<b.size(); j++){
 			collide(i,b[j]);
 		}
 		x[i] += dx[i];
@@ -311,7 +323,7 @@ void WaterSim::drawCollision(Shader s){
 	glm::vec3 color(1.0f,1.0f,0.0f);
 	glUniform3fv(colorLoc, 1, glm::value_ptr(color));
 	glBindVertexArray(planesVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 3*Np);
+	glDrawArrays(GL_TRIANGLES, 0, 3*b.size());
 	glBindVertexArray(0);
 }
 

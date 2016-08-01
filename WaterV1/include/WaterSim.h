@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <random>
+#include <vector>
 
 #include "Shader.h"
 
@@ -30,13 +31,16 @@ namespace Water{
 			float* pr;
 
 			//Planes
-			plane* b;
+			std::vector<plane> b;
 			//Number of planes
 			int Np;
 
 			void iter();
 			void draw(Shader s);
 			void drawCollision(Shader s);
+
+			void addPlane(glm::mat4 modelMatrix);
+			void configurePlanes();
 		private:
 			float kernelWidth;
 			//Particle mass

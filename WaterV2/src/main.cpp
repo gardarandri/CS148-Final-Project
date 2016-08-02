@@ -31,6 +31,9 @@ void do_movement();
 // Window dimensions
 const GLuint WIDTH = 960, HEIGHT = 540;
 
+//Collision render info
+GLuint collisionVBO, collisionVAO, collisionVBOnormals;
+
 // Camera
 Camera  camera(glm::vec3(0.0f, 1.0f, 3.0f));
 GLfloat lastX  =  WIDTH  / 2.0;
@@ -84,9 +87,42 @@ int main()
 
 	Sphere sphere(50, 0.1f);
 
-	Simulation watersim(1000);
+	Simulation watersim(500);
 
+	GLfloat PI = 3.14159265;
 	watersim.addPlane(glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-1.0,0.0)),glm::vec3(2.0,2.0,2.0)));
+
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,-1.0)),PI/3.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
+
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.0,0.0,0.0)),PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-1.0,0.0,0.0)),-PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
+
+	glGenBuffers(1, &collisionVBO);
+	glGenBuffers(1, &collisionVBOnormals);
+	glGenVertexArrays(1, &collisionVAO);
+
+	std::vector<glm::vec3> surfaceNormals;
+	for(int i=0; i<watersim.surfaces.size(); i++){
+		Triangle tmp = watersim.surfaces[i];
+		glm::vec3 norm = glm::cross(tmp.a - tmp.b, tmp.a - tmp.c);
+		surfaceNormals.push_back(norm);
+		surfaceNormals.push_back(norm);
+		surfaceNormals.push_back(norm);
+	}
+
+	glBindVertexArray(collisionVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, collisionVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*watersim.surfaces.size()*9, (GLfloat*)watersim.surfaces.data(), GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, collisionVBOnormals);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*watersim.surfaces.size()*9, (GLfloat*)surfaceNormals.data(), GL_STATIC_DRAW);
+
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(1);
+	glBindVertexArray(0);
 
     // Game loop
     while (!glfwWindowShouldClose(window))
@@ -128,12 +164,16 @@ int main()
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         // Draw the container (using container's vertex attributes)
-        glm::mat4 model;
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
 		for(int i=0; i<watersim.getNumberOfParticles(); i++){
 			sphere.draw(lightingShader, watersim.getPosition(i));
 		}
+        glm::mat4 model(1.0);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindVertexArray(collisionVAO);
+		glDrawArrays(GL_TRIANGLES, 0, watersim.surfaces.size()*3);
+		glBindVertexArray(0);
 
 		watersim.step();
 

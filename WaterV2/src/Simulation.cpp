@@ -63,7 +63,7 @@ bool Simulation::collideAndMove(int index, glm::vec3 &particleStep){
 
 	glm::vec3 n = glm::normalize(glm::cross(surfaces[minat].a - surfaces[minat].c,surfaces[minat].a - surfaces[minat].b));
 
-	x[i] = x[i] + mint*particleStep;
+	x[i] = x[i] + (mint - 0.001f)*particleStep;
 	dx[i] = dx[i] - (1.0f + c_R)*glm::dot(n,dx[i])*n;
 	particleStep = (1-mint)*(particleStep - (1.0f + c_R)*glm::dot(n,particleStep)*n);
 

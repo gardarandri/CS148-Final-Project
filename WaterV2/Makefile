@@ -4,7 +4,7 @@ CPPFLAGS = -O3 -std=c++11 -fpermissive
 LDFLAGS = -lGLU
 TARGET = water
 INCLUDE = -Iinclude/
-OBJS = objs/main.o objs/Shader.o objs/Camera.o objs/Sphere.o
+OBJS = objs/main.o objs/Shader.o objs/Camera.o objs/Sphere.o objs/Simulation.o
 OS = $(shell uname)
 LIB =  -lGL -lGLEW -lglfw
 
@@ -23,6 +23,9 @@ objs/main.o: src/main.cpp
 
 objs/Sphere.o: src/Sphere.cpp
 	$(CPP) -c $(CPPFLAGS) $(INCLUDE) src/Sphere.cpp -o objs/Sphere.o
+
+objs/Simulation.o: src/Simulation.cpp
+	$(CPP) -c $(CPPFLAGS) $(INCLUDE) src/Simulation.cpp -o objs/Simulation.o
 
 clean:
 	rm -f $(OBJS) $(TARGET)

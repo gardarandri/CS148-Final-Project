@@ -15,10 +15,6 @@ namespace Water{
 		glm::vec3 a,b,c;
 	};
 
-	glm::vec3 getTriangleNormal(Triangle t){
-		return glm::normalize(glm::cross(t.a - t.c, t.a - t.b));
-	}
-
 	class Simulation{
 		public:
 			Simulation(size_t particles);
@@ -43,15 +39,18 @@ namespace Water{
 			size_t N;
 
 			//Physics constats
-			GLfloat dens_0 = 100.0;	//Rest density
-			GLfloat g = 9.81;	  	//Gravity acceleration
+			GLfloat dens_0 = 998.0;	//Rest density
+			GLfloat g = -9.81;	  	//Gravity acceleration
 			GLfloat kappa = 3.0;	//Gas constant
 			GLfloat mu = 3.5;		//Viscosity
-			GLfloat dt = 0.01;		//Time step
-			GLfloat pm = 0.02;		//Mass of one particle
+			GLfloat sigma = 0.0728;	//Surface tension constant
+			GLfloat ell = 7.065;	//Surface tension threshold
+			GLfloat dt = 0.001;		//Time step
+			GLfloat pm = 10.0;		//Mass of one particle
+			GLfloat c_R = 0.4;		//Collision constant of reflection
 
 			//Simulation constans
-			GLfloat kernelRadius = 0.0435;	//How big the smoothing kernel is
+			GLfloat kernelRadius = 0.4;//0435;	//How big the smoothing kernel is
 
 			//Particle information
 			glm::vec3* x;		//Particle positions
@@ -70,7 +69,12 @@ namespace Water{
 
 			//Moves particle x[index] and handels collision to any surfaces.
 			//Returns true if the particle reflects off of something.
-			bool collideAndMove(int index, glm::vec3 particleStep);
+			bool collideAndMove(int index, glm::vec3 &particleStep);
+
+			//Helper function to find how far along a collision is.
+			//Returns -1.0 if no collision otherwise is returns t such
+			//that x[index] + t * dx[index] is in the triangle
+			GLfloat findCollision(int index, Triangle tri, glm::vec3 &particleStep);
 
 			//Kernels used to approximate various field properties
 			GLfloat kernel(glm::vec3 r, GLfloat h);

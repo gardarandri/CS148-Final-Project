@@ -18,6 +18,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Sphere.h"
+#include "Simulation.h"
 
 using namespace Water;
 
@@ -31,7 +32,7 @@ void do_movement();
 const GLuint WIDTH = 960, HEIGHT = 540;
 
 // Camera
-Camera  camera(glm::vec3(-1.0f, 1.0f, 0.0f));
+Camera  camera(glm::vec3(0.0f, 1.0f, 3.0f));
 GLfloat lastX  =  WIDTH  / 2.0;
 GLfloat lastY  =  HEIGHT / 2.0;
 bool    keys[1024];
@@ -83,6 +84,10 @@ int main()
 
 	Sphere sphere(50, 0.1f);
 
+	Simulation watersim(1000);
+
+	watersim.addPlane(glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-1.0,0.0)),glm::vec3(2.0,2.0,2.0)));
+
     // Game loop
     while (!glfwWindowShouldClose(window))
     {
@@ -126,7 +131,11 @@ int main()
         glm::mat4 model;
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-		sphere.draw(lightingShader, glm::vec3(0.0,0.0,0.0));
+		for(int i=0; i<watersim.getNumberOfParticles(); i++){
+			sphere.draw(lightingShader, watersim.getPosition(i));
+		}
+
+		watersim.step();
 
         // Swap the screen buffers
         glfwSwapBuffers(window);

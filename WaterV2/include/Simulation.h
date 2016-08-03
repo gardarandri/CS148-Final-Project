@@ -45,7 +45,7 @@ namespace Water{
 			GLfloat mu = 3.5;		//Viscosity
 			GLfloat sigma = 0.0728;	//Surface tension constant
 			GLfloat ell = 7.065;	//Surface tension threshold
-			GLfloat dt = 0.001;		//Time step
+			GLfloat dt = 0.02;		//Time step
 			GLfloat pm = 10.0;		//Mass of one particle
 			GLfloat c_R = 0.2;		//Collision constant of reflection
 

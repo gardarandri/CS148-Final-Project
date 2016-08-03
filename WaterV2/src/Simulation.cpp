@@ -141,14 +141,12 @@ void Simulation::applyForces(){
 			//Forces are computed for one time step and therefore
 			//we always multiply with dt.
 
-			//Gravitational force
-			tmpdx[i].y += dt * g;
 				
 			//Presure force
-			tmpdx[i] += - ( dt * kappa * (dens[j] - dens_0) / dens[j]) * dkernel(x[i] - x[j], kernelRadius);
+			tmpdx[i] -= - ( dt * kappa * (dens[j] - dens_0) / dens[j]) * dkernel(x[i] - x[j], kernelRadius);
 
 			//Viscosity force
-			tmpdx[i] += dt * mu * dx[j] / dens[j] * ddkernel(x[i] - x[j], kernelRadius);
+			tmpdx[i] -= dt * mu * dx[j] / dens[j] * ddkernel(x[i] - x[j], kernelRadius);
 
 			//Color field
 			ddcolor += ddkernel(x[i] - x[j], kernelRadius) / dens[j];
@@ -161,8 +159,10 @@ void Simulation::applyForces(){
 		//the interpolated surface normal is 
 		//longer than a threshold (ell)
 		if(glm::length(n) > ell){
-			tmpdx[i] += - dt * sigma * ddcolor * glm::normalize(n);
+			tmpdx[i] -= - dt * sigma * ddcolor * glm::normalize(n);
 		}
+		//Gravitational force
+		tmpdx[i].y += dt * g;
 	}
 
 	//Copy from dx copy board to dx

@@ -35,7 +35,7 @@ const GLuint WIDTH = 960, HEIGHT = 540;
 GLuint collisionVBO, collisionVAO, collisionVBOnormals;
 
 // Camera
-Camera  camera(glm::vec3(0.0f, 1.0f, 3.0f));
+Camera  camera(glm::vec3(0.0f, -3.5f, 20.0f));
 GLfloat lastX  =  WIDTH  / 2.0;
 GLfloat lastY  =  HEIGHT / 2.0;
 bool    keys[1024];
@@ -87,15 +87,20 @@ int main()
 
 	Sphere sphere(50, 0.1f);
 
-	Simulation watersim(500);
+	Simulation watersim(1000);
 
 	GLfloat PI = 3.14159265;
-	watersim.addPlane(glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-1.0,0.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-1.0,0.0)),0.05f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,-1.0)),PI/3.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
 
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.0,0.0,0.0)),PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-1.0,0.0,0.0)),-PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.0,0.0,0.0)),PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-2.0,0.0,0.0)),-PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
+
+	watersim.addPlane(glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-4.0,2.0)),glm::vec3(8.0,8.0,20.0)));
+
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-2.5,-4.0,3.0)),-PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,20.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.5,-4.0,3.0)),PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,20.0)));
 
 	glGenBuffers(1, &collisionVBO);
 	glGenBuffers(1, &collisionVBOnormals);

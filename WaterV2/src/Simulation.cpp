@@ -44,6 +44,12 @@ void Simulation::moveParticles(){
 		glm::vec3 d = dt * dx[i];
 		while(collideAndMove(i, d)){}
 		x[i] += d;
+
+		if(x[i].z > 20.0){
+			x[i].z = randomGLfloat();
+			x[i].y = -0.9;
+			x[i].x = randomGLfloat();
+		}
 	}
 }
 
@@ -148,6 +154,8 @@ void Simulation::applyForces(){
 			//Viscosity force
 			tmpdx[i] -= dt * mu * dx[j] / dens[j] * ddkernel(x[i] - x[j], kernelRadius);
 
+			//Dampening
+
 			//Color field
 			ddcolor += ddkernel(x[i] - x[j], kernelRadius) / dens[j];
 
@@ -159,7 +167,7 @@ void Simulation::applyForces(){
 		//the interpolated surface normal is 
 		//longer than a threshold (ell)
 		if(glm::length(n) > ell){
-			tmpdx[i] -= - dt * sigma * ddcolor * glm::normalize(n);
+			//tmpdx[i] -= - dt * sigma * ddcolor * glm::normalize(n);
 		}
 		//Gravitational force
 		tmpdx[i].y += dt * g;
@@ -226,13 +234,13 @@ glm::vec3 Simulation::getPosition(size_t index){
 void Simulation::addPlane(glm::mat4 modelMatrix){
 	Triangle t1;
 	t1.a = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,-1.0,1.0));
-	t1.b = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,-1.0,1.0));
-	t1.c = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
+	t1.c = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,-1.0,1.0));
+	t1.b = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
 
 	Triangle t2;
 	t2.a = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,-1.0,1.0));
-	t2.b = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
-	t2.c = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,1.0,1.0));
+	t2.c = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
+	t2.b = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,1.0,1.0));
 
 	surfaces.push_back(t1);
 	surfaces.push_back(t2);

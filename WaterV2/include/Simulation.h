@@ -45,12 +45,12 @@ namespace Water{
 			GLfloat mu = 3.5;		//Viscosity
 			GLfloat sigma = 0.0728;	//Surface tension constant
 			GLfloat ell = 7.065;	//Surface tension threshold
-			GLfloat dt = 0.02;		//Time step
+			GLfloat dt = 0.005;		//Time step
 			GLfloat pm = 10.0;		//Mass of one particle
 			GLfloat c_R = 0.2;		//Collision constant of reflection
 
 			//Simulation constans
-			GLfloat kernelRadius = 0.3;//0435;	//How big the smoothing kernel is
+			GLfloat kernelRadius = 0.2;//0435;	//How big the smoothing kernel is
 
 			//Particle information
 			glm::vec3* x;		//Particle positions

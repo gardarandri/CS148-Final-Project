@@ -19,16 +19,16 @@ GLfloat randomGLfloat(){
 }
 
 Simulation::Simulation(size_t particles){
-	v = 0.35; 				//Viscosity
-	k = 0.30;				//Presure constant
+	v = 3.5; 				//Viscosity
+	k = 3.0;				//Presure constant
 	g = -9.81;				//Gravitational force
-	m = 1.0;				//Particle mass
+	m = 10.0;				//Particle mass
 	p_0 = 1.0;				//Rest presure
 	d_0 = 900.0;			//Rest density
 	dt = 0.01;				//Time step
 	c_R = 0.1;
 
-	effectiveRadius = 0.08;
+	effectiveRadius = 0.50;
 
 	N = particles;
 

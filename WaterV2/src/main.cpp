@@ -29,7 +29,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void do_movement();
 
 // Window dimensions
-const GLuint WIDTH = 960, HEIGHT = 540;
+const GLuint WIDTH = 1500, HEIGHT = 1000;
 
 //Collision render info
 GLuint collisionVBO, collisionVAO, collisionVBOnormals;
@@ -96,7 +96,7 @@ int main()
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,1.0)),-PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.0,0.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-1.0,0.0,0.0)),-PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
+	//watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-1.0,0.0,0.0)),-PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 
 	glGenBuffers(1, &collisionVBO);
 	glGenBuffers(1, &collisionVBOnormals);

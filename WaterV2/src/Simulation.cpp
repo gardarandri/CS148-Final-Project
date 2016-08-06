@@ -24,7 +24,7 @@ Simulation::Simulation(size_t particles){
 	g = -9.81;				//Gravitational force
 	m = 10.0;				//Particle mass
 	p_0 = 1.0;				//Rest presure
-	d_0 = 900.0;			//Rest density
+	d_0 = 500.0;			//Rest density
 	dt = 0.01;				//Time step
 	c_R = 0.1;
 
@@ -45,7 +45,7 @@ Simulation::Simulation(size_t particles){
 	for(int m=0; m<100 && cnt < N; m++)
 	for(int l=0; l<10 && cnt < N; l++)
 	for(int n=0; n<10 && cnt < N; n++)
-		x[cnt++] = glm::vec3(l*0.2 - 0.5, m*0.2, n*0.2 - 1.0);
+		x[cnt++] = glm::vec3(l*0.2 - 0.5, m*0.2, n*0.2);
 }
 
 void Simulation::step(){
@@ -99,13 +99,14 @@ void Simulation::applyForces(){
 				dxcopy[i] += -dt * v * (dx[i] - dx[j]) / density[j] * viscositykernel(x[i] - x[j], effectiveRadius);
 
 				if(glm::dot(dx[i],dx[j]) < 0.0){
-					dxcopy[i] += dt * dx[i] * 0.01f * glm::dot(dx[i],dx[j]) / (glm::length(dx[i])*glm::length(dx[j]) + EPS);
+					dxcopy[i] += dt * dx[i] * 0.008f * glm::dot(dx[i],dx[j]) / (glm::length(dx[i])*glm::length(dx[j]) + EPS);
 				}
 			}
 		}
 
 		dxcopy[i].y += dt*g;
 
+		/*
 		for(int j=0; j<surfaces.size(); j++){
 			glm::vec3 n = glm::normalize(glm::cross( surfaces[j].a - surfaces[j].b, surfaces[j].a - surfaces[j].c));
 			GLfloat d = glm::dot(x[i] - surfaces[j].a, n);
@@ -116,6 +117,7 @@ void Simulation::applyForces(){
 				dxcopy[i] += - dt * .1f* n / (t*t + 1.0f);
 			}
 		}
+		*/
 	}
 
 

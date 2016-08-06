@@ -70,7 +70,7 @@ vector<glm::vec3> Sphere::generateSphereVertices(int resolution){
 void Sphere::draw(Shader s, glm::vec3 position){
         GLint modelLoc = glGetUniformLocation(s.Program, "model");
 
-        glm::mat4 model = glm::translate(glm::mat4(1.0), position);
+        glm::mat4 model = glm::translate(glm::mat4(0.5), position);
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
 		glBindVertexArray(VAO);

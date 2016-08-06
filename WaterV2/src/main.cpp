@@ -87,21 +87,21 @@ int main()
 
 	Sphere sphere(50, 0.1f);
 
-	Simulation watersim(2000);
+	Simulation watersim(1000);
 
 	GLfloat PI = 3.14159265;
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-1.0,0.0)),0.05f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,-1.0)),PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,1.0)),-PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
+	//watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,1.0)),-PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.0,0.0,0.0)),PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-2.0,0.0,0.0)),-PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 
-	watersim.addPlane(glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-4.0,2.0)),glm::vec3(8.0,8.0,20.0)));
+	watersim.addPlane(glm::rotate(glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-4.0,2.0)),glm::vec3(8.0,8.0,20.0)),0.1f,glm::vec3(1.0,0.0,0.0)));
 
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-2.5,-4.0,3.0)),-PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,20.0)));
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.5,-4.0,3.0)),PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,20.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-1.5,-4.0,3.0)),-PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,20.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.5,-4.0,3.0)),PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,20.0)));
 
 	glGenBuffers(1, &collisionVBO);
 	glGenBuffers(1, &collisionVBOnormals);
@@ -171,10 +171,11 @@ int main()
 
         // Draw the container (using container's vertex attributes)
 
+		glUniform3f(objectColorLoc, 0.0f, 0.5f,1.01f);
 		for(int i=0; i<watersim.getNumberOfParticles(); i++){
-			glUniform3f(objectColorLoc, 0.0f, 0.5f,1.01f);
 			sphere.draw(lightingShader, watersim.getPosition(i));
 		}
+        glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
         glm::mat4 model(1.0);
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 

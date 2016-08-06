@@ -19,33 +19,109 @@ GLfloat randomGLfloat(){
 }
 
 Simulation::Simulation(size_t particles){
+	v = 0.35; 				//Viscosity
+	k = 0.30;				//Presure constant
+	g = -9.81;				//Gravitational force
+	m = 1.0;				//Particle mass
+	p_0 = 1.0;				//Rest presure
+	d_0 = 900.0;			//Rest density
+	dt = 0.01;				//Time step
+	c_R = 0.1;
+
+	effectiveRadius = 0.08;
+
 	N = particles;
+
+	density = new GLfloat[N];
+	presure = new GLfloat[N];
 
 	x = new glm::vec3[N];
 	dx = new glm::vec3[N];
-	dens = new GLfloat[N];
 
-	tmpdx = new glm::vec3[N];
-	tmpdens = new GLfloat[N];
+	xcopy = new glm::vec3[N];
+	dxcopy = new glm::vec3[N];
 
-	for(int i=0; i<N; i++){
-		x[i] = glm::vec3(randomGLfloat(), randomGLfloat(), randomGLfloat());
-	}
+	int cnt = 0;
+	for(int l=0; l<10 && cnt < N; l++)
+	for(int m=0; m<10 && cnt < N; m++)
+	for(int n=0; n<10 && cnt < N; n++)
+		x[cnt++] = glm::vec3(l*0.2 - 1.0, m*0.2, n*0.2 - 1.0);
 }
 
 void Simulation::step(){
 	applyForces();
 
-	moveParticles();
-}
-
-void Simulation::moveParticles(){
 	for(int i=0; i<N; i++){
-		glm::vec3 d = dt * dx[i];
-		while(collideAndMove(i, d)){}
+		glm::vec3 d	= dt*dx[i];
+		while(collideAndMove(i,d)) {}
+
 		x[i] += d;
 	}
 }
+
+GLfloat kernel(glm::vec3 r, GLfloat r_e){
+	GLfloat l = glm::length(r);
+	if(l > r_e) return 0.0f;
+	return 315.0f*pow(r_e*r_e - l*l, 3.0f) / (64.0f*PI*pow(r_e,9.0f));
+}
+
+glm::vec3 presurekernel(glm::vec3 r, GLfloat r_e){
+	GLfloat l = glm::length(r);
+	if(l > r_e) return glm::vec3(0.0,0.0,0.0);
+	return 45.0f*pow(r_e - l,3.0f)*r / (PI*pow(r_e,6.0f)*l);
+}
+
+GLfloat viscositykernel(glm::vec3 r, GLfloat r_e){
+	GLfloat l = glm::length(r);
+	if(l > r_e) return 0.0f;
+	return 45.0f*(r_e - l) / (PI*pow(r_e,6.0f));
+}
+
+void Simulation::applyForces(){
+
+	for(int i=0; i<N; i++){
+		dxcopy[i] = dx[i];
+
+		density[i] = 1.0;
+		for(int j=0; j<N; j++){
+			density[i] += m * kernel(x[i] - x[j], effectiveRadius);
+		}
+		presure[i] = p_0 + k*(density[i] - d_0);
+	}
+
+	for(int i=0; i<N; i++){
+		for(int j=0; j<N; j++){
+			if(i != j){
+				dxcopy[i] += dt * (presure[i] + presure[j]) / (2.0f*density[j]) * presurekernel(x[i] - x[j], effectiveRadius);
+
+				dxcopy[i] += -dt * v * (dx[i] - dx[j]) / density[j] * viscositykernel(x[i] - x[j], effectiveRadius);
+
+				if(glm::dot(dx[i],dx[j]) < 0.0){
+					dxcopy[i] += dt * dx[i] * 0.01f * glm::dot(dx[i],dx[j]) / (glm::length(dx[i])*glm::length(dx[j]));
+				}
+			}
+		}
+
+		dxcopy[i].y += dt*g;
+
+		for(int j=0; j<surfaces.size(); j++){
+			glm::vec3 n = glm::normalize(glm::cross( surfaces[j].a - surfaces[j].b, surfaces[j].a - surfaces[j].c));
+			GLfloat d = glm::dot(x[i] - surfaces[j].a, n);
+			GLfloat side = (d>0) - (d<0);
+			n = -side*n;
+			GLfloat t = findCollision(i, surfaces[j], n);
+			if(t > 0.0 && t < 1.0){
+				dxcopy[i] += - dt * .1f* n / (t*t + 1.0f);
+			}
+		}
+	}
+
+
+	for(int i=0; i<N; i++){
+		dx[i] = dxcopy[i];
+	}
+}
+
 
 bool Simulation::collideAndMove(int index, glm::vec3 &particleStep){
 	int i = index;
@@ -114,109 +190,6 @@ GLfloat Simulation::findCollision(int index, Triangle tri, glm::vec3 &particleSt
 	return -1.0;
 }
 
-void Simulation::applyForces(){
-	//Copy into dx copy board
-	for(int i=0; i<N; i++){
-		tmpdx[i] = dx[i];
-	}
-
-	//Compute density
-	for(int i=0; i<N; i++){
-		tmpdens[i] = 0.0;
-		for(int j=0; j<N; j++){
-			tmpdens[i] += kernel(x[i] - x[j], kernelRadius);
-		}
-		tmpdens[i] *= pm;
-	}
-	//Copy updated density to dens
-	for(int i=0; i<N; i++){
-		dens[i] = tmpdens[i];
-	}
-
-	//Compute various forces
-	for(int i=0; i<N; i++){
-		GLfloat ddcolor = 0.0;
-		glm::vec3 n(0.0f,0.0f,0.0f);
-		for(int j=0; j<N; j++){
-			//Forces are computed for one time step and therefore
-			//we always multiply with dt.
-
-			//Gravitational force
-			tmpdx[i].y += dt * g;
-				
-			//Presure force
-			tmpdx[i] += - ( dt * kappa * (dens[j] - dens_0) / dens[j]) * dkernel(x[i] - x[j], kernelRadius);
-
-			//Viscosity force
-			tmpdx[i] += dt * mu * dx[j] / dens[j] * ddkernel(x[i] - x[j], kernelRadius);
-
-			//Color field
-			ddcolor += ddkernel(x[i] - x[j], kernelRadius) / dens[j];
-
-			//Surface normal
-			n += dkernel(x[i] - x[j], kernelRadius);
-		}
-
-		//Surface tension is only applied if 
-		//the interpolated surface normal is 
-		//longer than a threshold (ell)
-		if(glm::length(n) > ell){
-			tmpdx[i] += - dt * sigma * ddcolor * glm::normalize(n);
-		}
-	}
-
-	//Copy from dx copy board to dx
-	for(int i=0; i<N; i++){
-		dx[i] = tmpdx[i];
-	}
-}
-
-GLfloat Simulation::kernel(glm::vec3 r, GLfloat h){
-	if(glm::length(r) > h){
-		return 0.0;
-	}else{
-		return 315.0f*pow(h*h - pow(glm::length(r),2),3) / (64.0f * PI * pow(h,9));
-	}
-}
-
-//Kernel specifically for the presure force
-glm::vec3 Simulation::dkernel(glm::vec3 r, GLfloat h){
-	if(glm::length(r) > h) return glm::vec3(0.0,0.0,0.0);
-	if(glm::length(r) < 0.0001){
-		return glm::sign(r) * 45.0f / (PI * pow(h,6.0f));
-	}else{
-		return -r*(GLfloat)(45.0f*pow(h - glm::length(r),2)) / (GLfloat)(PI * pow(h,6) * glm::length(r));
-	}
-}
-
-//Kernel specifically for the viscosity force
-GLfloat Simulation::ddkernel(glm::vec3 r, GLfloat h){
-	if(glm::length(r) > h) return 0.0;
-	return 45.0f * (h - glm::length(r)) / (PI * pow(h,6));
-}
-
-
-/*
-GLfloat Simulation::kernel(glm::vec3 r, GLfloat h){
-	return pow(2*PI*h*h,- 3.0f / 2.0f) * exp(-pow(glm::length(r),2.0f)/(2.0f*h));
-}
-
-//Kernel specifically for the presure force
-glm::vec3 Simulation::dkernel(glm::vec3 r, GLfloat h){
-	return pow(2*PI*h*h,- 3.0f / 2.0f) * 2.0f*r*exp(-pow(glm::length(r),2.0f)/(2.0f*h)) / (2.0f * h);
-}
-
-//Kernel specifically for the viscosity force
-GLfloat Simulation::ddkernel(glm::vec3 r, GLfloat h){
-	return pow(2*PI*h*h,- 3.0f / 2.0f) *2.0f * exp(-pow(glm::length(r),2.0f)/(2.0f*h))*(pow(glm::length(r) / (2.0f*h),2.0f) + 6.0f / (2.0f*h));
-}
-*/
-
-
-
-
-
-
 
 
 glm::vec3 Simulation::getPosition(size_t index){
@@ -226,13 +199,13 @@ glm::vec3 Simulation::getPosition(size_t index){
 void Simulation::addPlane(glm::mat4 modelMatrix){
 	Triangle t1;
 	t1.a = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,-1.0,1.0));
-	t1.b = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,-1.0,1.0));
-	t1.c = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
+	t1.c = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,-1.0,1.0));
+	t1.b = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
 
 	Triangle t2;
 	t2.a = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,-1.0,1.0));
-	t2.b = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
-	t2.c = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,1.0,1.0));
+	t2.c = glm::vec3(modelMatrix*glm::vec4(1.0,0.0,1.0,1.0));
+	t2.b = glm::vec3(modelMatrix*glm::vec4(-1.0,0.0,1.0,1.0));
 
 	surfaces.push_back(t1);
 	surfaces.push_back(t2);

@@ -29,7 +29,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void do_movement();
 
 // Window dimensions
-const GLuint WIDTH = 960, HEIGHT = 540;
+const GLuint WIDTH = 1500, HEIGHT = 1000;
 
 //Collision render info
 GLuint collisionVBO, collisionVAO, collisionVBOnormals;
@@ -87,12 +87,13 @@ int main()
 
 	Sphere sphere(50, 0.1f);
 
-	Simulation watersim(1000);
+	Simulation watersim(2000);
 
 	GLfloat PI = 3.14159265;
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-1.0,0.0)),0.05f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
 
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,-1.0)),PI/3.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,-1.0)),PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,1.0)),-PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.0,0.0,0.0)),PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-2.0,0.0,0.0)),-PI/3.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
@@ -171,6 +172,7 @@ int main()
         // Draw the container (using container's vertex attributes)
 
 		for(int i=0; i<watersim.getNumberOfParticles(); i++){
+			glUniform3f(objectColorLoc, 0.0f, 0.5f,1.01f);
 			sphere.draw(lightingShader, watersim.getPosition(i));
 		}
         glm::mat4 model(1.0);
@@ -217,13 +219,13 @@ void do_movement()
     if (keys[GLFW_KEY_D])
         camera.ProcessKeyboard(RIGHT, deltaTime);
     if (keys[GLFW_KEY_UP])
-    	camera.ProcessMouseMovement(0.0, 5.1);
+    	camera.ProcessMouseMovement(0.0, 20.1);
     if (keys[GLFW_KEY_DOWN])
-    	camera.ProcessMouseMovement(0.0, -5.1);
+    	camera.ProcessMouseMovement(0.0, -20.1);
     if (keys[GLFW_KEY_LEFT])
-    	camera.ProcessMouseMovement(-5.1, 0.0);
+    	camera.ProcessMouseMovement(-20.1, 0.0);
     if (keys[GLFW_KEY_RIGHT])
-    	camera.ProcessMouseMovement(5.1, 0.0);
+    	camera.ProcessMouseMovement(20.1, 0.0);
 }
 
 bool firstMouse = true;

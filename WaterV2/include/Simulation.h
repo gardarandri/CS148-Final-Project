@@ -38,48 +38,31 @@ namespace Water{
 			//Number of particles
 			size_t N;
 
-			//Physics constats
-			GLfloat dens_0 = 998.0;	//Rest density
-			GLfloat g = -9.81;	  	//Gravity acceleration
-			GLfloat kappa = 3.0;	//Gas constant
-			GLfloat mu = 3.5;		//Viscosity
-			GLfloat sigma = 0.0728;	//Surface tension constant
-			GLfloat ell = 7.065;	//Surface tension threshold
-			GLfloat dt = 0.005;		//Time step
-			GLfloat pm = 10.0;		//Mass of one particle
-			GLfloat c_R = 0.2;		//Collision constant of reflection
+			//Physical arrays
+			GLfloat* density;
+			GLfloat* presure;
+			glm::vec3* x;
+			glm::vec3* dx;
 
-			//Simulation constans
-			GLfloat kernelRadius = 0.2;//0435;	//How big the smoothing kernel is
+			glm::vec3* xcopy;
+			glm::vec3* dxcopy;
 
-			//Particle information
-			glm::vec3* x;		//Particle positions
-			glm::vec3* dx;	//Particles velocity
-			GLfloat* dens; 	//Particles density
+			//Physical constans
+			GLfloat v = 1.0; 				//Viscosity
+			GLfloat k = 0.0001;				//Presure constant
+			GLfloat g = -9.81;				//Gravitational force
+			GLfloat m = 1.0;				//Particle mass
+			GLfloat p_0 = 1.0;				//Rest presure
+			GLfloat d_0 = 1.0;				//Rest density
+			GLfloat dt = 0.04;				//Time step
+			GLfloat c_R = 0.1;
 
-			glm::vec3* tmpdx;		//Particles velocity copy board
-			GLfloat* tmpdens; 	//Particles density copy board
+			GLfloat effectiveRadius = 0.4;
 
-
-			//Calculates various forces and applies them to tmpdx
 			void applyForces();
 
-			//Moves particels by dx
-			void moveParticles();
-
-			//Moves particle x[index] and handels collision to any surfaces.
-			//Returns true if the particle reflects off of something.
 			bool collideAndMove(int index, glm::vec3 &particleStep);
-
-			//Helper function to find how far along a collision is.
-			//Returns -1.0 if no collision otherwise is returns t such
-			//that x[index] + t * dx[index] is in the triangle
 			GLfloat findCollision(int index, Triangle tri, glm::vec3 &particleStep);
-
-			//Kernels used to approximate various field properties
-			GLfloat kernel(glm::vec3 r, GLfloat h);
-			glm::vec3 dkernel(glm::vec3 r, GLfloat h);
-			GLfloat ddkernel(glm::vec3 r, GLfloat h);
 	};
 }
 

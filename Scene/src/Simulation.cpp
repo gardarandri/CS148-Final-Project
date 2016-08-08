@@ -96,6 +96,31 @@ void Simulation::applyForces(){
 	}
 
 	for(int i=0; i<N; i++){
+		glm::vec3 atPos = x[i] - checkGridHalfWidth * gridRes * glm::vec3(1,1,1);
+		for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
+			for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
+				for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
+					int h = hash(atPos);
+					if(h != i){
+						dxcopy[i] += dt * (presure[i] + presure[h]) / (2.0f*density[h]) * presurekernel(x[i] - x[h], effectiveRadius);
+
+						dxcopy[i] += -dt * v * (dx[i] - dx[h]) / density[h] * viscositykernel(x[i] - x[h], effectiveRadius);
+
+						if(glm::dot(dx[i],dx[h]) < 0.0){
+							dxcopy[i] += dt * dx[i] * 0.008f * glm::dot(dx[i],dx[h]) / (glm::length(dx[i])*glm::length(dx[h]) + EPS);
+						}
+					}
+					atPos.x += gridRes;
+				}
+				atPos.y += gridRes;
+			}
+			atPos.z += gridRes;
+		}
+		dxcopy[i].y += dt*g;
+	}
+
+	/*
+	for(int i=0; i<N; i++){
 		for(int j=0; j<N; j++){
 			if(i != j){
 				dxcopy[i] += dt * (presure[i] + presure[j]) / (2.0f*density[j]) * presurekernel(x[i] - x[j], effectiveRadius);
@@ -110,6 +135,7 @@ void Simulation::applyForces(){
 
 		dxcopy[i].y += dt*g;
 
+		*/
 		/*
 		for(int j=0; j<surfaces.size(); j++){
 			glm::vec3 n = glm::normalize(glm::cross( surfaces[j].a - surfaces[j].b, surfaces[j].a - surfaces[j].c));
@@ -122,7 +148,9 @@ void Simulation::applyForces(){
 			}
 		}
 		*/
+	/*
 	}
+	*/
 
 
 	for(int i=0; i<N; i++){
@@ -198,8 +226,18 @@ GLfloat Simulation::findCollision(int index, Triangle tri, glm::vec3 &particleSt
 	return -1.0;
 }
 
-size_t hash(glm::vec3 t){
-	return (size_t)(
+const int p1 = 73856093;
+const int p2 = 19349663;
+const int p3 = 83492791;
+
+size_t Simulation::hash(glm::vec3 t){
+	return (size_t)((p1*(int)(t.x / gridRes)) ^ (p2*(int)(t.y / gridRes)) ^ (p2*(int)(t.z / gridRes))) % htSize;
+}
+
+void Simulation::hashParticles(){
+	for(int i=0; i<N; i++){
+		ht[hash(x[i])] = i;
+	}
 }
 
 glm::vec3 Simulation::getPosition(size_t index){

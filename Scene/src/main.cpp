@@ -88,7 +88,7 @@ int main()
 
 	Sphere sphere(50, 0.1f);
 
-    Model ourModel("/home/gardar/Downloads/Waterfall/Smaller size trees.obj");
+    //Model ourModel("/home/gardar/Downloads/Waterfall/Smaller size trees.obj");
     //Model ourModel("/home/gardar/Documents/Forritun/ICGAI/ModelV1/nanosuit/nanosuit.obj");
 
 	Simulation watersim(1000);
@@ -190,7 +190,7 @@ int main()
         glm::mat4 sceneModel = glm::translate(glm::mat4(1.0),glm::vec3(-2.0,-4.0,0.0));
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(sceneModel));
 
-        ourModel.Draw(lightingShader);       
+        //ourModel.Draw(lightingShader);       
 
 		watersim.step();
 

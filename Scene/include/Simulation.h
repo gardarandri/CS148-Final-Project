@@ -48,6 +48,7 @@ namespace Water{
 			glm::vec3* dxcopy;
 
 			int* ht;
+			size_t htSize = 19753;
 
 			//Physical constans
 			GLfloat v = 1.0; 				//Viscosity
@@ -69,6 +70,7 @@ namespace Water{
 			GLfloat findCollision(int index, Triangle tri, glm::vec3 &particleStep);
 
 			size_t hash(glm::vec3 t);
+			void hashParticles();
 	};
 }
 

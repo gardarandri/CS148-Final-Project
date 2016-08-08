@@ -1,6 +1,6 @@
 CPP = g++
 LD = g++
-CPPFLAGS = -O3 -std=c++11 -fpermissive
+CPPFLAGS = -O3 -std=c++11 -fpermissive -g
 LDFLAGS = -lGLU
 TARGET = water
 INCLUDE = -Iinclude/

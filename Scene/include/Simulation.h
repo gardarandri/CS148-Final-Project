@@ -47,6 +47,8 @@ namespace Water{
 			glm::vec3* xcopy;
 			glm::vec3* dxcopy;
 
+			int* ht;
+
 			//Physical constans
 			GLfloat v = 1.0; 				//Viscosity
 			GLfloat k = 0.0001;				//Presure constant
@@ -58,11 +60,15 @@ namespace Water{
 			GLfloat c_R = 0.1;
 
 			GLfloat effectiveRadius = 0.4;
+			GLfloat gridRes = 0.2;
+			int checkGridHalfWidth = 2;
 
 			void applyForces();
 
 			bool collideAndMove(int index, glm::vec3 &particleStep);
 			GLfloat findCollision(int index, Triangle tri, glm::vec3 &particleStep);
+
+			size_t hash(glm::vec3 t);
 	};
 }
 

@@ -41,6 +41,8 @@ Simulation::Simulation(size_t particles){
 	xcopy = new glm::vec3[N];
 	dxcopy = new glm::vec3[N];
 
+	ht = new int[N];
+
 	int cnt = 0;
 	for(int m=0; m<100 && cnt < N; m++)
 	for(int l=0; l<10 && cnt < N; l++)
@@ -49,6 +51,8 @@ Simulation::Simulation(size_t particles){
 }
 
 void Simulation::step(){
+	hashParticles();
+	
 	applyForces();
 
 	for(int i=0; i<N; i++){
@@ -192,6 +196,10 @@ GLfloat Simulation::findCollision(int index, Triangle tri, glm::vec3 &particleSt
 		return t;
 	}
 	return -1.0;
+}
+
+size_t hash(glm::vec3 t){
+	return (size_t)(
 }
 
 glm::vec3 Simulation::getPosition(size_t index){

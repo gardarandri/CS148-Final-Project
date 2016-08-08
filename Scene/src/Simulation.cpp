@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 #include <cmath>
 #include <vector>
 #include <GL/glew.h>
@@ -22,7 +23,7 @@ Simulation::Simulation(size_t particles){
 	v = 3.5; 				//Viscosity
 	k = 3.0;				//Presure constant
 	g = -9.81;				//Gravitational force
-	m = 10.0;				//Particle mass
+	pm = 10.0;				//Particle mass
 	p_0 = 1.0;				//Rest presure
 	d_0 = 500.0;			//Rest density
 	dt = 0.01;				//Time step
@@ -41,19 +42,59 @@ Simulation::Simulation(size_t particles){
 	xcopy = new glm::vec3[N];
 	dxcopy = new glm::vec3[N];
 
-	ht = new int[N];
+	ht = new int*[htSize];
+	for(int i=0; i<htSize; i++){
+		ht[i] = new int[htBucket];
+	}
+	htBuckets = new int[htSize];
 
 	int cnt = 0;
 	for(int m=0; m<100 && cnt < N; m++)
 	for(int l=0; l<10 && cnt < N; l++)
 	for(int n=0; n<10 && cnt < N; n++)
-		x[cnt++] = glm::vec3(l*0.2 - 0.5, m*0.2, n*0.2);
+		x[cnt++] = glm::vec3(l*0.3 - 0.5, m*0.3, n*0.3);
 }
+
+static void applyForcesThreaded(Simulation* w, int imod);
 
 void Simulation::step(){
 	hashParticles();
 	
-	applyForces();
+	bool doThreading = true;
+	if(doThreading == true){
+		for(int i=0; i<N; i++){
+			dxcopy[i] = dx[i];
+		}
+
+		thread t1(applyForcesThreaded,this,0);
+		t1.join();
+
+		/*
+		thread t1(applyForcesThreaded,this,1);
+		thread t2(applyForcesThreaded,this,2);
+		thread t3(applyForcesThreaded,this,3);
+		thread t4(applyForcesThreaded,this,4);
+		thread t5(applyForcesThreaded,this,5);
+		thread t6(applyForcesThreaded,this,6);
+		thread t7(applyForcesThreaded,this,7);
+		thread t8(applyForcesThreaded,this,8);
+
+		t1.join();
+		t2.join();
+		t3.join();
+		t4.join();
+		t5.join();
+		t6.join();
+		t7.join();
+		t8.join();
+		*/
+
+		for(int i=0; i<N; i++){
+			 dx[i] = dxcopy[i];
+		}
+	}else{
+		applyForces(-1);
+	}
 
 	for(int i=0; i<N; i++){
 		glm::vec3 d	= dt*dx[i];
@@ -83,75 +124,107 @@ GLfloat viscositykernel(glm::vec3 r, GLfloat r_e){
 	return 45.0f*(r_e - l) / (PI*pow(r_e,6.0f));
 }
 
+static void applyForcesThreaded(Simulation* w, int imod){
+	cout<<"Running imod = "<<imod<<endl;
+	w -> applyForces(imod);
+}
+
+void Simulation::applyForces(int imod){
+	glm::vec3 mx(gridRes*1.0001f, 0.0, 0.0);
+	glm::vec3 my(0.0, gridRes*1.0001f, 0.0);
+	glm::vec3 mz(0.0, 0.0, gridRes*1.0001f);
+	
+	for(int i=imod; i<N; i+=8){
+		density[i] = 0.0;
+		for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
+			for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
+				for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
+					int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
+					int* bucket = ht[h];
+					for(int j=0; j<htBucket && j<htBuckets[h]; j++){
+						int k = ht[h][j];
+						density[i] += pm * kernel(x[i] - x[k], effectiveRadius);
+					}
+				}
+			}
+		}
+		presure[i] = p_0 + k*(density[i] - d_0);
+	}
+
+	for(int i=imod; i<N; i+=8){
+		for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
+			for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
+				for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
+					int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
+					int* bucket = ht[h];
+					for(int j=0; j<htBucket && j<htBuckets[h]; j++){
+						int k = ht[h][j];
+						if(k != i){
+							dxcopy[i] += dt * (presure[i] + presure[k]) / (2.0f*density[k]) * presurekernel(x[i] - x[k], effectiveRadius);
+
+							dxcopy[i] += -dt * v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
+
+							if(glm::dot(dx[i],dx[k]) < 0.0){
+								dxcopy[i] += dt * dx[i] * 0.008f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
+							}
+						}
+					}
+				}
+			}
+		}
+		dxcopy[i].y += dt*g;
+	}
+}
+
 void Simulation::applyForces(){
+	glm::vec3 mx(gridRes*1.0001f, 0.0, 0.0);
+	glm::vec3 my(0.0, gridRes*1.0001f, 0.0);
+	glm::vec3 mz(0.0, 0.0, gridRes*1.0001f);
 
 	for(int i=0; i<N; i++){
 		dxcopy[i] = dx[i];
-
-		density[i] = 1.0;
-		for(int j=0; j<N; j++){
-			density[i] += m * kernel(x[i] - x[j], effectiveRadius);
+	}
+	
+	for(int i=0; i<N; i++){
+		density[i] = 0.0;
+		for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
+			for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
+				for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
+					int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
+					int* bucket = ht[h];
+					for(int j=0; j<htBucket && j<htBuckets[h]; j++){
+						int k = ht[h][j];
+						density[i] += pm * kernel(x[i] - x[k], effectiveRadius);
+					}
+				}
+			}
 		}
 		presure[i] = p_0 + k*(density[i] - d_0);
 	}
 
 	for(int i=0; i<N; i++){
-		glm::vec3 atPos = x[i] - checkGridHalfWidth * gridRes * glm::vec3(1,1,1);
 		for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
 			for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
 				for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
-					int h = hash(atPos);
-					if(h != i){
-						dxcopy[i] += dt * (presure[i] + presure[h]) / (2.0f*density[h]) * presurekernel(x[i] - x[h], effectiveRadius);
+					int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
+					int* bucket = ht[h];
+					for(int j=0; j<htBucket && j<htBuckets[h]; j++){
+						int k = ht[h][j];
+						if(k != i){
+							dxcopy[i] += dt * (presure[i] + presure[k]) / (2.0f*density[k]) * presurekernel(x[i] - x[k], effectiveRadius);
 
-						dxcopy[i] += -dt * v * (dx[i] - dx[h]) / density[h] * viscositykernel(x[i] - x[h], effectiveRadius);
+							dxcopy[i] += -dt * v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
 
-						if(glm::dot(dx[i],dx[h]) < 0.0){
-							dxcopy[i] += dt * dx[i] * 0.008f * glm::dot(dx[i],dx[h]) / (glm::length(dx[i])*glm::length(dx[h]) + EPS);
+							if(glm::dot(dx[i],dx[k]) < 0.0){
+								dxcopy[i] += dt * dx[i] * 0.008f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
+							}
 						}
 					}
-					atPos.x += gridRes;
-				}
-				atPos.y += gridRes;
-			}
-			atPos.z += gridRes;
-		}
-		dxcopy[i].y += dt*g;
-	}
-
-	/*
-	for(int i=0; i<N; i++){
-		for(int j=0; j<N; j++){
-			if(i != j){
-				dxcopy[i] += dt * (presure[i] + presure[j]) / (2.0f*density[j]) * presurekernel(x[i] - x[j], effectiveRadius);
-
-				dxcopy[i] += -dt * v * (dx[i] - dx[j]) / density[j] * viscositykernel(x[i] - x[j], effectiveRadius);
-
-				if(glm::dot(dx[i],dx[j]) < 0.0){
-					dxcopy[i] += dt * dx[i] * 0.008f * glm::dot(dx[i],dx[j]) / (glm::length(dx[i])*glm::length(dx[j]) + EPS);
 				}
 			}
 		}
-
 		dxcopy[i].y += dt*g;
-
-		*/
-		/*
-		for(int j=0; j<surfaces.size(); j++){
-			glm::vec3 n = glm::normalize(glm::cross( surfaces[j].a - surfaces[j].b, surfaces[j].a - surfaces[j].c));
-			GLfloat d = glm::dot(x[i] - surfaces[j].a, n);
-			GLfloat side = (d>0) - (d<0);
-			n = -side*n;
-			GLfloat t = findCollision(i, surfaces[j], n);
-			if(t > 0.0 && t < 1.0){
-				dxcopy[i] += - dt * .1f* n / (t*t + 1.0f);
-			}
-		}
-		*/
-	/*
 	}
-	*/
-
 
 	for(int i=0; i<N; i++){
 		dx[i] = dxcopy[i];
@@ -231,12 +304,17 @@ const int p2 = 19349663;
 const int p3 = 83492791;
 
 size_t Simulation::hash(glm::vec3 t){
-	return (size_t)((p1*(int)(t.x / gridRes)) ^ (p2*(int)(t.y / gridRes)) ^ (p2*(int)(t.z / gridRes))) % htSize;
+	return (((p1*(int)(t.x / gridRes)) ^ (p2*(int)(t.y / gridRes)) ^ (p2*(int)(t.z / gridRes))) % htSize + htSize) % htSize;
 }
 
 void Simulation::hashParticles(){
+	for(int i=0; i<htSize; i++){
+		htBuckets[i] = 0;
+	}
+
 	for(int i=0; i<N; i++){
-		ht[hash(x[i])] = i;
+		int h = hash(x[i]);
+		ht[h][htBuckets[h]++] = i;
 	}
 }
 

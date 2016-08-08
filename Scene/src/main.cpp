@@ -91,7 +91,7 @@ int main()
     //Model ourModel("/home/gardar/Downloads/Waterfall/Smaller size trees.obj");
     //Model ourModel("/home/gardar/Documents/Forritun/ICGAI/ModelV1/nanosuit/nanosuit.obj");
 
-	Simulation watersim(1000);
+	Simulation watersim(2000);
 
 	GLfloat PI = 3.14159265;
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-1.0,0.0)),0.05f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));

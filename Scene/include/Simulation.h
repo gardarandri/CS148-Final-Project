@@ -34,6 +34,9 @@ namespace Water{
 
 			//Collision surfaces
 			std::vector<Triangle> surfaces;
+
+			void applyForces(int imod);
+			void applyForces();
 		private:
 			//Number of particles
 			size_t N;
@@ -47,14 +50,16 @@ namespace Water{
 			glm::vec3* xcopy;
 			glm::vec3* dxcopy;
 
-			int* ht;
+			int** ht;
+			int* htBuckets;
 			size_t htSize = 19753;
+			size_t htBucket = 100;
 
 			//Physical constans
 			GLfloat v = 1.0; 				//Viscosity
 			GLfloat k = 0.0001;				//Presure constant
 			GLfloat g = -9.81;				//Gravitational force
-			GLfloat m = 1.0;				//Particle mass
+			GLfloat pm = 1.0;				//Particle mass
 			GLfloat p_0 = 1.0;				//Rest presure
 			GLfloat d_0 = 1.0;				//Rest density
 			GLfloat dt = 0.04;				//Time step
@@ -62,9 +67,8 @@ namespace Water{
 
 			GLfloat effectiveRadius = 0.4;
 			GLfloat gridRes = 0.2;
-			int checkGridHalfWidth = 2;
+			int checkGridHalfWidth = 3;
 
-			void applyForces();
 
 			bool collideAndMove(int index, glm::vec3 &particleStep);
 			GLfloat findCollision(int index, Triangle tri, glm::vec3 &particleStep);

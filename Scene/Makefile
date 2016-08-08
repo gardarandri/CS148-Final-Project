@@ -6,7 +6,7 @@ TARGET = water
 INCLUDE = -Iinclude/
 OBJS = objs/main.o objs/Shader.o objs/Camera.o objs/Sphere.o objs/Simulation.o
 OS = $(shell uname)
-LIB =  -lGL -lGLEW -lglfw
+LIB =  -lGL -lGLEW -lglfw -lassimp -lSOIL
 
 
 default: $(OBJS)

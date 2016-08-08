@@ -19,6 +19,7 @@
 #include "Camera.h"
 #include "Sphere.h"
 #include "Simulation.h"
+#include "model.h"
 
 using namespace Water;
 
@@ -86,6 +87,9 @@ int main()
     Shader lightingShader("shaders/phong.vs", "shaders/phong.frag");
 
 	Sphere sphere(50, 0.1f);
+
+    Model ourModel("/home/gardar/Downloads/Waterfall/Smaller size trees.obj");
+    //Model ourModel("/home/gardar/Documents/Forritun/ICGAI/ModelV1/nanosuit/nanosuit.obj");
 
 	Simulation watersim(1000);
 
@@ -182,6 +186,11 @@ int main()
 		glBindVertexArray(collisionVAO);
 		glDrawArrays(GL_TRIANGLES, 0, watersim.surfaces.size()*3);
 		glBindVertexArray(0);
+
+        glm::mat4 sceneModel = glm::translate(glm::mat4(1.0),glm::vec3(-2.0,-4.0,0.0));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(sceneModel));
+
+        ourModel.Draw(lightingShader);       
 
 		watersim.step();
 

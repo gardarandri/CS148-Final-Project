@@ -5,15 +5,10 @@ out vec4 color;
 
 in vec3 FragPos;  
 in vec3 Normal;  
-in vec2 TexCoord;
 
 uniform vec3 lightPos; 
 uniform vec3 viewPos;
 uniform vec3 lightColor;
-uniform vec3 objectColor;
-
-uniform sampler2D texture_diffuse;
-uniform sampler2D texture_specular;
 
 void main()
 {
@@ -25,13 +20,7 @@ void main()
 	float diffusion = max(dot(lightDir,n),0.0);
 	float specular = pow(dot(halfAngle,n),50.0);
 	vec4 ambiant = vec4(0.0,0.1,0.0,1.0);
+	vec3 objectColor = vec3(0.0,0.1,0.8);
 
-	vec3 dcol = texture(texture_diffuse, TexCoord).xyz;
-	vec3 scol = texture(texture_specular, TexCoord).xyz;
-	//dcol = vec3(0.0,1.0,0.0);
-	if(diffusion > 0.0){
-		color = vec4((diffusion+0.1)*dcol + specular*scol,1.0);
-	}else{
-		color = vec4(0.1*dcol,1.0);
-	}
+	color = vec4(diffusion*objectColor + 0.5*objectColor,1.0);
 } 

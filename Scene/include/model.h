@@ -53,7 +53,9 @@ private:
     {
         // Read file via ASSIMP
         Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate 
+				| aiProcess_FlipUVs 
+				| aiProcess_CalcTangentSpace);
         // Check for errors
         if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
         {
@@ -140,7 +142,7 @@ private:
             for(GLuint j = 0; j < face.mNumIndices; j++)
                 indices.push_back(face.mIndices[j]);
         }
-		cout<<"Am  heererereri "<<mesh->mMaterialIndex<<endl;
+		cout<<"Material index "<<mesh->mMaterialIndex<<endl;
 
         // Process materials
         if(mesh->mMaterialIndex >= 0)
@@ -177,6 +179,7 @@ private:
     vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
     {
         vector<Texture> textures;
+		cout<<mat->GetTextureCount(type)<<endl;
         for(GLuint i = 0; i < mat->GetTextureCount(type); i++)
         {
             aiString str;

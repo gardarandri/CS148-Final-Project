@@ -60,40 +60,26 @@ static void applyForcesThreaded(Simulation* w, int imod);
 void Simulation::step(){
 	hashParticles();
 	
-	bool doThreading = true;
+	bool doThreading = false;
 	if(doThreading == true){
 		for(int i=0; i<N; i++){
 			dxcopy[i] = dx[i];
 		}
 
-		thread t1(applyForcesThreaded,this,0);
-		t1.join();
+		vector<thread> t;
+		for(int i=0; i<N; i++){
+			t.push_back(thread(applyForcesThreaded, this, i));
+		}
 
-		/*
-		thread t1(applyForcesThreaded,this,1);
-		thread t2(applyForcesThreaded,this,2);
-		thread t3(applyForcesThreaded,this,3);
-		thread t4(applyForcesThreaded,this,4);
-		thread t5(applyForcesThreaded,this,5);
-		thread t6(applyForcesThreaded,this,6);
-		thread t7(applyForcesThreaded,this,7);
-		thread t8(applyForcesThreaded,this,8);
-
-		t1.join();
-		t2.join();
-		t3.join();
-		t4.join();
-		t5.join();
-		t6.join();
-		t7.join();
-		t8.join();
-		*/
+		for(int i=0; i<N; i++){
+			t[i].join();
+		}
 
 		for(int i=0; i<N; i++){
 			 dx[i] = dxcopy[i];
 		}
 	}else{
-		applyForces(-1);
+		applyForces();
 	}
 
 	for(int i=0; i<N; i++){
@@ -101,6 +87,10 @@ void Simulation::step(){
 		while(collideAndMove(i,d)) {}
 
 		x[i] += d;
+
+		if(x[i].y < -4.5 || x[i].x > 6.0 || x[i].x < -2.0 || x[i].z > 10.0 || x[i].z < -8.0){
+			x[i] = glm::vec3(1.40767 + 2.0*randomGLfloat() - 1.0,-1.19419,-4.87515 + 2.0*randomGLfloat() - 1.0);
+		}
 	}
 }
 
@@ -133,47 +123,44 @@ void Simulation::applyForces(int imod){
 	glm::vec3 mx(gridRes*1.0001f, 0.0, 0.0);
 	glm::vec3 my(0.0, gridRes*1.0001f, 0.0);
 	glm::vec3 mz(0.0, 0.0, gridRes*1.0001f);
-	
-	for(int i=imod; i<N; i+=8){
-		density[i] = 0.0;
-		for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
-			for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
-				for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
-					int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
-					int* bucket = ht[h];
-					for(int j=0; j<htBucket && j<htBuckets[h]; j++){
-						int k = ht[h][j];
-						density[i] += pm * kernel(x[i] - x[k], effectiveRadius);
-					}
+	int i = imod;
+
+	density[i] = 0.0;
+	for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
+		for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
+			for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
+				int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
+				int* bucket = ht[h];
+				for(int j=0; j<htBucket && j<htBuckets[h]; j++){
+					int k = ht[h][j];
+					density[i] += pm * kernel(x[i] - x[k], effectiveRadius);
 				}
 			}
 		}
-		presure[i] = p_0 + k*(density[i] - d_0);
 	}
+	presure[i] = p_0 + k*(density[i] - d_0);
 
-	for(int i=imod; i<N; i+=8){
-		for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
-			for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
-				for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
-					int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
-					int* bucket = ht[h];
-					for(int j=0; j<htBucket && j<htBuckets[h]; j++){
-						int k = ht[h][j];
-						if(k != i){
-							dxcopy[i] += dt * (presure[i] + presure[k]) / (2.0f*density[k]) * presurekernel(x[i] - x[k], effectiveRadius);
+	for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
+		for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
+			for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
+				int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
+				int* bucket = ht[h];
+				for(int j=0; j<htBucket && j<htBuckets[h]; j++){
+					int k = ht[h][j];
+					if(k != i){
+						dxcopy[i] += dt * (presure[i] + presure[k]) / (2.0f*density[k]) * presurekernel(x[i] - x[k], effectiveRadius);
 
-							dxcopy[i] += -dt * v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
+						dxcopy[i] += -dt * v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
 
-							if(glm::dot(dx[i],dx[k]) < 0.0){
-								dxcopy[i] += dt * dx[i] * 0.008f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
-							}
+						if(glm::dot(dx[i],dx[k]) < 0.0){
+							dxcopy[i] += dt * dx[i] * 0.008f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
 						}
 					}
 				}
 			}
 		}
-		dxcopy[i].y += dt*g;
 	}
+	dxcopy[i].y += dt*g;
 }
 
 void Simulation::applyForces(){
@@ -216,7 +203,7 @@ void Simulation::applyForces(){
 							dxcopy[i] += -dt * v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
 
 							if(glm::dot(dx[i],dx[k]) < 0.0){
-								dxcopy[i] += dt * dx[i] * 0.008f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
+								dxcopy[i] += dt * dx[i] * 0.001f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
 							}
 						}
 					}

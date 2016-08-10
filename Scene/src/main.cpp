@@ -8,6 +8,9 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
+//SOIL
+#include <SOIL.h>
+
 // GLM Mathematics
 #define GLM_FORCE_RADIANS // force everything in radian
 #include <glm/glm.hpp>
@@ -30,7 +33,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void do_movement();
 
 // Window dimensions
-const GLuint WIDTH = 1500, HEIGHT = 1000;
+const GLuint WIDTH = 1024, HEIGHT = 768;
 
 //Collision render info
 GLuint collisionVBO, collisionVAO, collisionVBOnormals;
@@ -47,6 +50,9 @@ glm::vec3 lightPos(3.0f, 1.0f, 0.0f);
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
+
+//Recording
+bool isRecording = false;
 
 GLint modelLoc;
 GLint viewLoc;
@@ -236,6 +242,8 @@ int main()
 	glBindVertexArray(0);
 	
 
+	//cnt for filenames
+	int cnt=1;
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -302,6 +310,13 @@ int main()
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
+
+		if(isRecording == true){
+			stringstream ss;
+			ss << "movie" << cnt++ << ".bmp";
+			string filename = ss.str();
+			int save_result = SOIL_save_screenshot(filename.c_str(), SOIL_SAVE_TYPE_BMP, 0, 0, WIDTH, HEIGHT);
+		}
 	}
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
@@ -342,6 +357,8 @@ void do_movement()
 		camera.ProcessMouseMovement(-20.1, 0.0);
 	if (keys[GLFW_KEY_RIGHT])
 		camera.ProcessMouseMovement(20.1, 0.0);
+	if (keys[GLFW_KEY_R])
+		isRecording = !isRecording;
 }
 
 bool firstMouse = true;

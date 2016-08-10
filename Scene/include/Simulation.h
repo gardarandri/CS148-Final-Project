@@ -25,6 +25,9 @@ namespace Water{
 			//Returns the position of particle at index
 			glm::vec3 getPosition(size_t index);
 
+			//Returns the velocity of the particle at index
+			glm::vec3 getVelocity(size_t index);
+
 			//Returns the number of particles in the simulation
 			size_t getNumberOfParticles(){ return N; }
 

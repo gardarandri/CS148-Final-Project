@@ -16,7 +16,7 @@ namespace Water{
 		public:
 			Sphere(int resolution, GLfloat radius);
 
-			void draw(Shader s, glm::vec3 position);
+			void draw(Shader s, glm::vec3 position, glm::vec3 velocity);
 		private:
 			GLuint VBO, VAO;
 

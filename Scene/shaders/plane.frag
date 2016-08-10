@@ -17,8 +17,7 @@ void main()
 
 	float diffusion = max(dot(lightDir,n),0.0);
 	float specular = pow(dot(halfAngle,n),50.0);
-	vec4 ambiant = vec4(0.0,0.1,0.0,1.0);
-	vec3 objectColor = vec3(0.0,0.1,0.8);
+	vec3 objectColor = 0.5*vec3(0.39,0.26,0.12);
 
-	color = vec4(diffusion*objectColor + 0.5*objectColor,1.0);
+	color = vec4((0.5*diffusion + 0.5*1.0)*objectColor,1.0);
 } 

@@ -67,11 +67,12 @@ vector<glm::vec3> Sphere::generateSphereVertices(int resolution){
 	return res;
 }
 
-void Sphere::draw(Shader s, glm::vec3 position){
+void Sphere::draw(Shader s, glm::vec3 position, glm::vec3 velocity){
 	s.Use();
 	GLint modelLoc = glGetUniformLocation(s.Program, "model");
 
-	glm::mat4 model = glm::translate(glm::mat4(2.5), position);
+	glm::mat4 model = glm::scale(glm::translate(glm::mat4(1.0), position), (1.0f + 1.8f*glm::abs(glm::normalize(velocity)))*0.5f);
+	//glm::mat4 model = glm::translate(glm::mat4(1.0), position);
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
 	glBindVertexArray(VAO);

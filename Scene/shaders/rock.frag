@@ -23,16 +23,25 @@ void main()
 	vec3 halfAngle = normalize(camDir + lightDir);
 
 	float diffusion = max(dot(lightDir,n),0.0);
-	float specular = pow(dot(halfAngle,n),50.0);
+	//float specular = pow(dot(halfAngle,n),50.0);
+	float mossratio = max(-n.y, 0.0);
 	vec4 ambiant = vec4(0.0,0.1,0.0,1.0);
 
-	vec3 dcol = 0.4*texture(texture_diffuse, TexCoord).xyz;
-	vec3 scol = texture(texture_specular, TexCoord).xyz;
-	//dcol = vec3(0.0,1.0,0.0);
+	vec3 dcol = texture(texture_diffuse, TexCoord).xyz;
+	vec3 mosscol = texture(texture_specular, TexCoord).xyz;
+
+	if(diffusion > 0.0){
+		color = vec4((diffusion+0.2)*(dcol + mossratio*mosscol),1.0);
+	}else{
+		color = vec4(0.2*(dcol + mossratio*mosscol),1.0);
+	}
+
+
+	/*
 	if(diffusion > 0.0){
 		color = vec4((diffusion+0.1)*dcol + specular*scol,1.0);
 	}else{
 		color = vec4(0.1*dcol,1.0);
 	}
-	//color = vec4(-n,1.0);
+	*/
 } 

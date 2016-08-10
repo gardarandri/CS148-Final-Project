@@ -36,7 +36,7 @@ const GLuint WIDTH = 1500, HEIGHT = 1000;
 GLuint collisionVBO, collisionVAO, collisionVBOnormals;
 
 // Camera
-Camera  camera(glm::vec3(0.0f, -3.5f, 20.0f));
+Camera  camera(glm::vec3(4.32825,-3.28939,9.06154));
 GLfloat lastX  =  WIDTH  / 2.0;
 GLfloat lastY  =  HEIGHT / 2.0;
 bool    keys[1024];
@@ -115,19 +115,30 @@ int main()
 
 	// OpenGL options
 	glEnable(GL_DEPTH_TEST);
+	//glEnable (GL_BLEND);
+	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Build and compile our shader program
-	Shader lightingShader("shaders/phong.vs", "shaders/phong.frag");
+	Shader domeShader("shaders/phong.vs", "shaders/phong.frag");
 	Shader waterShader("shaders/water.vs", "shaders/water.frag");
+	Shader treeShader("shaders/tree.vs", "shaders/tree.frag");
+	Shader rockShader("shaders/rock.vs", "shaders/rock.frag");
+	Shader planeShader("shaders/plane.vs", "shaders/plane.frag");
 
 	Sphere sphere(50, 0.1f);
 
-	Model ourModel("/home/gardar/Downloads/Waterfall/Smallersizetrees.obj");
+	Model treesObj("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/Highest.obj");
+	Model sphereObj("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/Sphere.obj");
+	Model rockObj("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/OnlyRocks.obj");
+	//Model ourModel("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/LeavesAndBarksHigherQuality.obj");
+	//Model ourModel("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/LeavesAndBarks.obj");
+	//Model ourModel("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/OnlyRocks.obj");
+	//Model ourModel("/home/gardar/Downloads/Waterfall/Smallersizetrees.obj");
 	//Model ourModel("/home/gardar/Documents/Forritun/ICGAI/ModelV1/nanosuit/nanosuit.obj");
 
 	//Water spawn spot
 	//1.40767 -1.19419 -4.87515
-	Simulation watersim(1000);
+	Simulation watersim(3000);
 
 	GLfloat PI = 3.14159265;
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-4.0,2.0)),0.0f,glm::vec3(1.0,0.0,0.1)),glm::vec3(20.0,20.0,20.0)));
@@ -145,7 +156,7 @@ int main()
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.43,0.2,-5.16)),PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.26,-0.99,-4.93)),PI/6.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
-	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.51,-1.44,-4.36)),-PI/8.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.21,-1.44,-4.36)),-PI/3.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.42,-2.43,0.93)),PI/6.0f,glm::vec3(0.0,1.0,0.0)),-PI/2.1f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.60,-3.46,0.04)),-PI/5.0f,glm::vec3(0.0,1.0,0.0)),-PI/3.2f,glm::vec3(0.0,0.0,1.0)),glm::vec3(1.4,0.4,0.4)));
 
@@ -184,6 +195,48 @@ int main()
 	glEnableVertexAttribArray(1);
 	glBindVertexArray(0);
 
+	GLuint surfaceVBO, surfaceVBOnormals, surfaceVAO;
+
+	glGenBuffers(1, &surfaceVBO);
+	glGenBuffers(1, &surfaceVBOnormals);
+	glGenVertexArrays(1, &surfaceVAO);
+
+	GLfloat surfaceSizeLen = 20.0f;
+	GLfloat surfaceVertices[] = {
+		surfaceSizeLen, -4.0f, surfaceSizeLen,
+		surfaceSizeLen, -4.0f, -surfaceSizeLen,
+		-surfaceSizeLen, -4.0f, surfaceSizeLen,
+
+		-surfaceSizeLen, -4.0f, surfaceSizeLen,
+		-surfaceSizeLen, -4.0f, -surfaceSizeLen,
+		surfaceSizeLen, -4.0f, -surfaceSizeLen
+	};
+	
+	GLfloat surfaceN[] = {
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f
+	};
+
+	glBindVertexArray(surfaceVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, surfaceVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(surfaceVertices), surfaceVertices, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, surfaceVBOnormals);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(surfaceN), surfaceN, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(1);
+	glBindVertexArray(0);
+	
+
+
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -200,15 +253,15 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		configureShader(waterShader);
 
 		// Draw the container (using container's vertex attributes)
 
+		configureShader(waterShader);
 		for(int i=0; i<watersim.getNumberOfParticles(); i++){
-			sphere.draw(waterShader, watersim.getPosition(i));
-			//sphere.draw(lightingShader, watersim.getPosition(i));
+			sphere.draw(waterShader, watersim.getPosition(i), watersim.getVelocity(i));
+			//sphere.draw(domeShader, watersim.getPosition(i));
 		}
-		configureShader(lightingShader);
+		//configureShader(domeShader);
 
 		glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
 		glm::mat4 model(1.0);
@@ -219,13 +272,31 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, watersim.surfaces.size()*3);
 		glBindVertexArray(0);
 		*/
+		
+		configureShader(planeShader);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glBindVertexArray(surfaceVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
 
 		glm::mat4 sceneModel = glm::translate(glm::mat4(1.0),glm::vec3(-2.0,-4.0,0.0));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(sceneModel));
 
-		ourModel.Draw(lightingShader);
+		configureShader(treeShader);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(sceneModel));
+		treesObj.Draw(treeShader);
+		
 
-		//cout<<camera.Position.x<<" "<<camera.Position.y<<" "<<camera.Position.z<<" "<<endl;
+		configureShader(domeShader);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(sceneModel));
+		sphereObj.Draw(domeShader);
+
+
+		configureShader(rockShader);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(sceneModel));
+		rockObj.Draw(rockShader);
+
+		cout<<camera.Position.x<<" "<<camera.Position.y<<" "<<camera.Position.z<<" "<<endl;
 
 		watersim.step();
 

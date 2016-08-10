@@ -24,10 +24,20 @@ Simulation::Simulation(size_t particles){
 	k = 3.0;				//Presure constant
 	g = -9.81;				//Gravitational force
 	pm = 10.0;				//Particle mass
+	p_0 = 1001.3;				//Rest presure
+	d_0 = 998.0;			//Rest density
+	dt = 0.01;				//Time step
+	c_R = 0.1;
+	/*
+	v = 3.5; 				//Viscosity
+	k = 3.0;				//Presure constant
+	g = -9.81;				//Gravitational force
+	pm = 10.0;				//Particle mass
 	p_0 = 1.0;				//Rest presure
 	d_0 = 500.0;			//Rest density
 	dt = 0.01;				//Time step
 	c_R = 0.1;
+	*/
 
 	effectiveRadius = 0.50;
 
@@ -52,7 +62,7 @@ Simulation::Simulation(size_t particles){
 	for(int m=0; m<100 && cnt < N; m++)
 	for(int l=0; l<10 && cnt < N; l++)
 	for(int n=0; n<10 && cnt < N; n++)
-		x[cnt++] = glm::vec3(l*0.3 - 0.5, m*0.3, n*0.3);
+		x[cnt++] = glm::vec3(l*0.3 + 0.5, m*0.3 - 1.19, n*0.3 - 4.37);
 }
 
 static void applyForcesThreaded(Simulation* w, int imod);
@@ -90,6 +100,8 @@ void Simulation::step(){
 
 		if(x[i].y < -4.5 || x[i].x > 6.0 || x[i].x < -2.0 || x[i].z > 10.0 || x[i].z < -8.0){
 			x[i] = glm::vec3(1.40767 + 2.0*randomGLfloat() - 1.0,-1.19419,-4.87515 + 2.0*randomGLfloat() - 1.0);
+			dx[i] *= 0.0f;
+			dx[i].z = 1.7;
 		}
 	}
 }
@@ -170,46 +182,51 @@ void Simulation::applyForces(){
 
 	for(int i=0; i<N; i++){
 		dxcopy[i] = dx[i];
+		density[i] = 0.0;
 	}
 	
 	for(int i=0; i<N; i++){
-		density[i] = 0.0;
 		for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
 			for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
 				for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
 					int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
-					int* bucket = ht[h];
 					for(int j=0; j<htBucket && j<htBuckets[h]; j++){
-						int k = ht[h][j];
-						density[i] += pm * kernel(x[i] - x[k], effectiveRadius);
+						density[i] += kernel(x[i] - x[ht[h][j]], effectiveRadius);
 					}
 				}
 			}
 		}
+		density[i] *= pm;
 		presure[i] = p_0 + k*(density[i] - d_0);
 	}
 
+	glm::vec3 f(0.0,0.0,0.0);
 	for(int i=0; i<N; i++){
+		f *= 0.0f;
 		for(int l=-checkGridHalfWidth; l<=checkGridHalfWidth; l++){
 			for(int m=-checkGridHalfWidth; m<=checkGridHalfWidth; m++){
 				for(int n=-checkGridHalfWidth; n<=checkGridHalfWidth; n++){
 					int h=hash(x[i] + (GLfloat)l*mx + (GLfloat)m*my + (GLfloat)n*mz);
 					int* bucket = ht[h];
 					for(int j=0; j<htBucket && j<htBuckets[h]; j++){
-						int k = ht[h][j];
+						int k = bucket[j];
 						if(k != i){
-							dxcopy[i] += dt * (presure[i] + presure[k]) / (2.0f*density[k]) * presurekernel(x[i] - x[k], effectiveRadius);
+							//dxcopy[i] += dt * (presure[i] + presure[k]) / (2.0f*density[k]) * presurekernel(x[i] - x[k], effectiveRadius);
+							f += (presure[i] + presure[k]) / (2.0f*density[k]) * presurekernel(x[i] - x[k], effectiveRadius);
 
-							dxcopy[i] += -dt * v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
+							//dxcopy[i] += -dt * v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
+							f +=  - v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
 
 							if(glm::dot(dx[i],dx[k]) < 0.0){
-								dxcopy[i] += dt * dx[i] * 0.001f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
+								//dxcopy[i] += dt * dx[i] * 0.001f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
+								f += dx[i] * 0.01f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
 							}
 						}
 					}
 				}
 			}
 		}
+		dxcopy[i] += dt*f;
 		dxcopy[i].y += dt*g;
 	}
 
@@ -307,6 +324,10 @@ void Simulation::hashParticles(){
 
 glm::vec3 Simulation::getPosition(size_t index){
 	return x[index];
+}
+
+glm::vec3 Simulation::getVelocity(size_t index){
+	return dx[index];
 }
 
 void Simulation::addPlane(glm::mat4 modelMatrix){

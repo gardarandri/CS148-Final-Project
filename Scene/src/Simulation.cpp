@@ -24,10 +24,10 @@ Simulation::Simulation(size_t particles){
 	k = 3.0;				//Presure constant
 	g = -9.81;				//Gravitational force
 	pm = 10.0;				//Particle mass
-	p_0 = 1001.3;				//Rest presure
-	d_0 = 998.0;			//Rest density
+	p_0 = 2301.3;				//Rest presure
+	d_0 = 1398.0;			//Rest density
 	dt = 0.01;				//Time step
-	c_R = 0.1;
+	c_R = 0.0;
 	/*
 	v = 3.5; 				//Viscosity
 	k = 3.0;				//Presure constant
@@ -99,7 +99,7 @@ void Simulation::step(){
 		x[i] += d;
 
 		if(x[i].y < -4.5 || x[i].x > 6.0 || x[i].x < -2.0 || x[i].z > 10.0 || x[i].z < -8.0){
-			x[i] = glm::vec3(1.40767 + 2.0*randomGLfloat() - 1.0,-1.19419,-4.87515 + 2.0*randomGLfloat() - 1.0);
+			x[i] = glm::vec3(1.60767 + 2.0*randomGLfloat() - 1.0,-0.9 + randomGLfloat()*0.2,-7.0 + 2.0*randomGLfloat() - 1.0);
 			dx[i] *= 0.0f;
 			dx[i].z = 1.7;
 		}
@@ -211,15 +211,12 @@ void Simulation::applyForces(){
 					for(int j=0; j<htBucket && j<htBuckets[h]; j++){
 						int k = bucket[j];
 						if(k != i){
-							//dxcopy[i] += dt * (presure[i] + presure[k]) / (2.0f*density[k]) * presurekernel(x[i] - x[k], effectiveRadius);
 							f += (presure[i] + presure[k]) / (2.0f*density[k]) * presurekernel(x[i] - x[k], effectiveRadius);
 
-							//dxcopy[i] += -dt * v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
 							f +=  - v * (dx[i] - dx[k]) / density[k] * viscositykernel(x[i] - x[k], effectiveRadius);
 
 							if(glm::dot(dx[i],dx[k]) < 0.0){
-								//dxcopy[i] += dt * dx[i] * 0.001f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
-								f += dx[i] * 0.01f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
+								//f += dx[i] * 0.01f * glm::dot(dx[i],dx[k]) / (glm::length(dx[i])*glm::length(dx[k]) + EPS);
 							}
 						}
 					}

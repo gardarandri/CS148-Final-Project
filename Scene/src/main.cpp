@@ -33,7 +33,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void do_movement();
 
 // Window dimensions
-const GLuint WIDTH = 1024, HEIGHT = 768;
+const GLuint WIDTH = 1800, HEIGHT = 1000;
 
 //Collision render info
 GLuint collisionVBO, collisionVAO, collisionVBOnormals;
@@ -136,11 +136,6 @@ int main()
 	Model treesObj("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/Highest.obj");
 	Model sphereObj("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/Sphere.obj");
 	Model rockObj("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/OnlyRocks.obj");
-	//Model ourModel("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/LeavesAndBarksHigherQuality.obj");
-	//Model ourModel("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/LeavesAndBarks.obj");
-	//Model ourModel("/home/gardar/Downloads/Blend in Pieces/Blend in Pieces/OnlyRocks.obj");
-	//Model ourModel("/home/gardar/Downloads/Waterfall/Smallersizetrees.obj");
-	//Model ourModel("/home/gardar/Documents/Forritun/ICGAI/ModelV1/nanosuit/nanosuit.obj");
 
 	//Water spawn spot
 	//1.40767 -1.19419 -4.87515
@@ -149,30 +144,32 @@ int main()
 	GLfloat PI = 3.14159265;
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,-4.0,2.0)),0.0f,glm::vec3(1.0,0.0,0.1)),glm::vec3(20.0,20.0,20.0)));
 
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.44,-1.68,-4.67)),0.10f,glm::vec3(1.0,0.0,0.1)),glm::vec3(2.0,2.0,2.0)));
-
-	//watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,-1.0)),PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
-	//watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,1.0)),-PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.44,-1.28,-7.67)),0.10f,glm::vec3(1.0,0.0,0.1)),glm::vec3(2.0,2.0,5.0)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.53,-2.43,-2.0)),-PI/2.1f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.53,-3.43,-2.0)),-PI/4.1f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.53+0.3,-3.43+0.3,-2.0)),-PI/4.1f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(3.32,-2.43,-2.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.43,-3.81,-2.16)),PI/2.5f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
-	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.43,0.2,-5.16)),PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(1.43,0.2,-8.16)),PI/2.0f,glm::vec3(1.0,0.0,0.0)),glm::vec3(2.0,2.0,2.0)));
 
-	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.26,-0.99,-4.93)),PI/6.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
-	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.21,-1.44,-4.36)),-PI/3.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(3.06,-0.99,-5.53)),0.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,4.0)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.55,-1.44,-5.56)),0.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,4.0)));
 	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.42,-2.43,0.93)),PI/6.0f,glm::vec3(0.0,1.0,0.0)),-PI/2.1f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.60,-3.46,0.04)),-PI/5.0f,glm::vec3(0.0,1.0,0.0)),-PI/3.2f,glm::vec3(0.0,0.0,1.0)),glm::vec3(1.4,0.4,0.4)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(3.59171,-3.60756,0.89)),PI/10.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(4.21,-2.87,4.73)),PI/10.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,2.0,2.0)));
 
-	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(3.94,-2.52,2.83)),PI/2.0f+PI/10.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,0.6,0.6)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(3.94,-2.52,2.33)),PI/2.0f+PI/4.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,0.6,0.6)));
 	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(4.25,-3.08,5.84)),PI/2.0f+PI/5.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(2.0,1.0,0.5)));
 
 	watersim.addPlane(glm::scale(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(-0.2,-3.60756,4.83412)),-PI/2.0f,glm::vec3(0.0,0.2,1.0)),glm::vec3(3.0,2.0,3.0)));
+
+	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.19,-4.01,5.48+0.1)),-PI/4.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(0.2,0.2,0.2)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.39+0.1,-4.01,5.48-0.05)),PI/2.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(0.2,0.2,0.2)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.19+0.6,-4.01,5.48+0.1)),PI/4.0f,glm::vec3(0.0,1.0,0.0)),PI/2.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(0.2,0.2,0.2)));
+	watersim.addPlane(glm::scale(glm::rotate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(2.19+0.3,-3.81,5.48+0.1)),-0.1f,glm::vec3(1.0,0.0,0.0)),0.0f,glm::vec3(0.0,0.0,1.0)),glm::vec3(0.2,0.2,0.2)));
 
 	glGenBuffers(1, &collisionVBO);
 	glGenBuffers(1, &collisionVBOnormals);
@@ -293,7 +290,6 @@ int main()
 		configureShader(treeShader);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(sceneModel));
 		treesObj.Draw(treeShader);
-		
 
 		configureShader(domeShader);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(sceneModel));
